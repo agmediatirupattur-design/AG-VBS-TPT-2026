@@ -1,0 +1,86 @@
+.report-container {
+  padding: 4rem 5%;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: calc(100vh - 250px);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  padding: 1.5rem;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-table th, .report-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.report-table th {
+  font-family: var(--font-heading);
+  color: var(--primary-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.report-table tr:hover td {
+  background-color: rgba(78, 205, 196, 0.05);
+}
+
+.empty-state {
+  text-align: center !important;
+  color: #777;
+  padding: 3rem !important;
+  font-style: italic;
+}
+
+.total-expenses-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--error-color), #ff6b6b);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.amount-col {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: var(--error-color);
+}
+
+.report-table tfoot td {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.report-table tfoot tr td:last-child {
+  text-align: right;
+}
