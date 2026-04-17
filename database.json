@@ -1,3 +1,7 @@
 [
-{}
+  {
+    "areaName": "Test Area",
+    "memberCount": "10",
+    "inchargePerson": "Test Person"
+  }
 ]

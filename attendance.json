@@ -13,9 +13,9 @@
     "id": 2,
     "name": "Sharmila",
     "attendance": {
-      "27": false,
+      "27": true,
       "28": false,
-      "29": false,
+      "29": true,
       "30": false
     }
   },

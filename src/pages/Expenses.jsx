@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IndianRupee, Plus, Receipt } from 'lucide-react';
+import { IndianRupee, Plus, Receipt, Trash2 } from 'lucide-react';
 import './Expenses.css';
 
 const Expenses = () => {
@@ -59,6 +59,27 @@ const Expenses = () => {
       alert("Error saving the expense. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteExpense = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this expense?")) return;
+
+    try {
+      const res = await fetch(`/api/expenses/${id}`, {
+        method: 'DELETE'
+      });
+      
+      // Remove from UI whether API succeeds or fails because of local state syncing
+      setExpenses(prev => prev.filter(exp => (exp.id || exp._id) !== id));
+      
+      if (!res.ok) {
+        console.warn("Expense was deleted locally, but server reported an error.");
+      }
+    } catch (err) {
+      console.error("Failed to delete expense", err);
+      // Still remove locally to ensure UI is optimistic
+      setExpenses(prev => prev.filter(exp => (exp.id || exp._id) !== id));
     }
   };
 
@@ -148,22 +169,35 @@ const Expenses = () => {
                   <th>Bill Name</th>
                   <th>Purchased By</th>
                   <th className="amount-col">Amount (₹)</th>
+                  <th style={{width: '60px', textAlign: 'center'}}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {expenses.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="empty-state">No expenses recorded yet.</td>
+                    <td colSpan="5" className="empty-state">No expenses recorded yet.</td>
                   </tr>
                 ) : (
-                  expenses.map((exp, idx) => (
-                    <tr key={exp.id || idx}>
-                      <td>{exp.date}</td>
-                      <td style={{fontWeight: '600', color: 'var(--text-light)'}}>{exp.billName}</td>
-                      <td>{exp.purchasedBy}</td>
-                      <td className="amount-col font-mono">₹{Number(exp.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                    </tr>
-                  ))
+                  expenses.map((exp, idx) => {
+                    const expenseId = exp.id || exp._id;
+                    return (
+                      <tr key={expenseId || idx}>
+                        <td>{exp.date}</td>
+                        <td style={{fontWeight: '600', color: 'var(--text-light)'}}>{exp.billName}</td>
+                        <td>{exp.purchasedBy}</td>
+                        <td className="amount-col font-mono">₹{Number(exp.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        <td style={{textAlign: 'center'}}>
+                          <button 
+                            onClick={() => handleDeleteExpense(expenseId)}
+                            style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', padding: '5px' }}
+                            title="Delete Expense"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

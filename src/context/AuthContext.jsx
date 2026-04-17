@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -13,6 +14,7 @@ export const AuthProvider = ({ children }) => {
     const storedAuth = localStorage.getItem('vbs-auth');
     if (storedAuth) {
       const { role, username } = JSON.parse(storedAuth);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsAuthenticated(true);
       setRole(role);
       setUsername(username || null);

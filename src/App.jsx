@@ -13,6 +13,7 @@ import Attendance from './pages/Attendance';
 import StudentAttendance from './pages/StudentAttendance';
 import Expenses from './pages/Expenses';
 import Admin from './pages/Admin';
+import FaithClassBook from './pages/FaithClassBook';
 
 import './index.css';
 
@@ -34,11 +35,12 @@ function App() {
               <Route path="/registration" element={<ProtectedRoute><Registration /></ProtectedRoute>} />
               <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
               <Route path="/my-class" element={<ProtectedRoute><StudentAttendance /></ProtectedRoute>} />
+              <Route path="/faith-class-book" element={<ProtectedRoute><FaithClassBook /></ProtectedRoute>} />
               
               {/* Admin Only Routes */}
               <Route path="/admin" element={<ProtectedRoute requireAdmin={true}><Admin /></ProtectedRoute>} />
               <Route path="/report" element={<ProtectedRoute requireAdmin={true}><Report /></ProtectedRoute>} />
-              <Route path="/expenses" element={<ProtectedRoute requireAdmin={true}><Expenses /></ProtectedRoute>} />
+              <Route path="/expenses" element={<ProtectedRoute requireAdmin={true} allowedFor={["Hari", "Jeba", "Yessaiya", "Vignesh", "Chandra Mohan"]}><Expenses /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />

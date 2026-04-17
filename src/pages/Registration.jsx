@@ -32,11 +32,15 @@ const Registration = () => {
     };
 
     try {
-      await fetch('/api/registrations', {
+      const response = await fetch('/api/registrations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEntry)
       });
+
+      if (!response.ok) {
+        throw new Error('Server rejected registration');
+      }
     } catch (err) {
       console.error("Failed to save to server, saving locally instead", err);
       const existingData = JSON.parse(localStorage.getItem('vbs-registrations') || '[]');

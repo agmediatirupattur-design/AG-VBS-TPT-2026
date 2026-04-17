@@ -13,22 +13,45 @@ const Attendance = () => {
 
   useEffect(() => {
     const fetchAttendance = async () => {
+      let data = [];
       try {
         const res = await fetch('/api/attendance');
         if (res.ok) {
-          const data = await res.json();
-          if (role === 'admin') {
-            setTeachers(data);
-          } else if (username) {
-            setTeachers(data.filter(t => t.name.toLowerCase().includes(username.toLowerCase())));
-          } else {
-            setTeachers([]);
-          }
+          data = await res.json();
         }
       } catch (err) {
         console.error("Failed to fetch attendance", err);
       }
+
+      // Removed problematic localStorage merge loop that might break data
+      let finalData = data.length > 0 ? data : [];
+      if (finalData.length === 0) {
+        const cachedAttendance = localStorage.getItem('vbs-attendance');
+        if (cachedAttendance) {
+          finalData = JSON.parse(cachedAttendance);
+        }
+      }
+      
+      if (role === 'admin') {
+        setTeachers(finalData);
+      } else if (username) {
+        // Filter by name so teachers only see themselves
+        const cleanUser = username.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+        const matchedTeachers = finalData.filter(teacher => {
+          const cleanTeacher = teacher.name.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+          return (
+            teacher.name === username ||
+            cleanTeacher === cleanUser ||
+            cleanTeacher.includes(cleanUser) || 
+            cleanUser.includes(cleanTeacher)
+          );
+        });
+        setTeachers(matchedTeachers);
+      } else {
+        setTeachers([]);
+      }
     };
+    
     fetchAttendance();
   }, [username, role]);
 
@@ -47,18 +70,28 @@ const Attendance = () => {
     }));
   };
 
+  const saveAttendanceLocally = (attendanceData) => {
+    localStorage.setItem('vbs-attendance', JSON.stringify(attendanceData));
+  };
+
   const handleSave = async () => {
     try {
-      await fetch('/api/attendance', {
+      const response = await fetch('/api/attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(teachers)
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to save attendance');
+      }
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error("Failed to save", err);
-      alert("Failed to save attendance");
+      saveAttendanceLocally(teachers);
+      alert("Failed to save attendance to the server. Progress was saved locally.");
     }
   };
 

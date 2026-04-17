@@ -4,7 +4,7 @@ import { Heart, Star, Music, Smile } from 'lucide-react';
 import './Home.css';
 
 const Home = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
   return (
     <div className="home-container fade-in">
@@ -37,6 +37,9 @@ const Home = () => {
           <Heart size={40} color="var(--primary-color)" />
           <h3>Faith</h3>
           <p>Learn beautiful Bible stories.</p>
+          <button className="feature-btn" onClick={() => navigate('/faith-class-book')}>
+            Class Books
+          </button>
         </div>
         <div className="feature-card glass-panel">
           <Star size={40} color="var(--accent-color)" />

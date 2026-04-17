@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, UserCheck, Receipt, Calendar, TrendingUp } from 'lucide-react';
+import { Users, UserCheck, Receipt, Calendar, TrendingUp, Settings, Save } from 'lucide-react';
 import './Admin.css';
 
 const Admin = () => {
@@ -10,16 +10,58 @@ const Admin = () => {
     totalExpenses: 0
   });
 
+  const [adminSettings, setAdminSettings] = useState({
+    eventName: '',
+    startDate: '',
+    endDate: '',
+    contactEmail: '',
+    theme: ''
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
         // Fetch registrations
-        const regRes = await fetch('/api/registrations');
-        const registrations = regRes.ok ? await regRes.json() : [];
+        let registrations = [];
+        try {
+          const regRes = await fetch('/api/registrations');
+          registrations = regRes.ok ? await regRes.json() : [];
+        } catch {
+          registrations = [];
+        }
+
+        if (!registrations.length) {
+          const localData = localStorage.getItem('vbs-registrations');
+          if (localData) {
+            registrations = JSON.parse(localData);
+          }
+        }
 
         // Fetch teacher attendance
-        const teacherRes = await fetch('/api/attendance');
-        const teachers = teacherRes.ok ? await teacherRes.json() : [];
+        let teachers = [];
+        try {
+          const teacherRes = await fetch('/api/attendance');
+          teachers = teacherRes.ok ? await teacherRes.json() : [];
+        } catch {
+          teachers = [];
+        }
+
+        const cachedAttendance = localStorage.getItem('vbs-attendance');
+        if (cachedAttendance) {
+          const localTeachers = JSON.parse(cachedAttendance);
+          const merged = teachers.map(teacher => {
+            const localTeacher = localTeachers.find(item => item.id === teacher.id);
+            return localTeacher ? { ...teacher, ...localTeacher } : teacher;
+          });
+          localTeachers.forEach(localTeacher => {
+            if (!merged.some(item => item.id === localTeacher.id)) {
+              merged.push(localTeacher);
+            }
+          });
+          teachers = merged;
+        }
 
         // Fetch student attendance
         const studentRes = await fetch('/api/student-attendance');
@@ -41,8 +83,51 @@ const Admin = () => {
       }
     };
 
+    const fetchAdminSettings = async () => {
+      try {
+        const response = await fetch('/api/admin');
+        if (response.ok) {
+          const settings = await response.json();
+          setAdminSettings(settings);
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin settings', err);
+      }
+    };
+
     fetchStats();
+    fetchAdminSettings();
   }, []);
+
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(adminSettings),
+      });
+      
+      if (response.ok) {
+        alert('Admin settings saved successfully!');
+        setIsEditing(false);
+      } else {
+        alert('Failed to save admin settings');
+      }
+    } catch (err) {
+      console.error('Error saving admin settings', err);
+      alert('Error saving admin settings');
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setAdminSettings(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   return (
     <div className="admin-container fade-in">
@@ -83,6 +168,86 @@ const Admin = () => {
             <h3>₹{stats.totalExpenses.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
             <p>Total Expenses</p>
           </div>
+        </div>
+      </div>
+
+      <div className="admin-settings glass-panel slide-up-5">
+        <div className="settings-header">
+          <Settings size={24} color="var(--primary-color)" />
+          <h3>Admin Settings</h3>
+          <button 
+            className="edit-btn"
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            {isEditing ? 'Cancel' : 'Edit Settings'}
+          </button>
+        </div>
+
+        <div className="settings-form">
+          <div className="form-group">
+            <label>Event Name:</label>
+            <input
+              type="text"
+              name="eventName"
+              value={adminSettings.eventName}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              placeholder="VBS 2026"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Start Date:</label>
+            <input
+              type="date"
+              name="startDate"
+              value={adminSettings.startDate}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>End Date:</label>
+            <input
+              type="date"
+              name="endDate"
+              value={adminSettings.endDate}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Contact Email:</label>
+            <input
+              type="email"
+              name="contactEmail"
+              value={adminSettings.contactEmail}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              placeholder="admin@example.com"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Theme:</label>
+            <input
+              type="text"
+              name="theme"
+              value={adminSettings.theme}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              placeholder="Faith & Fun"
+            />
+          </div>
+
+          {isEditing && (
+            <button className="save-btn" onClick={handleSaveSettings}>
+              <Save size={16} />
+              Save Settings
+            </button>
+          )}
         </div>
       </div>
 
