@@ -161,14 +161,14 @@ const Attendance = () => {
       )}
 
       <div className="teacher-grid">
-        {teachers.map((teacher) => {
+        {teachers.map((teacher, index) => {
           const isPresent = teacher.attendance && teacher.attendance[selectedDay];
           return (
             <button 
               key={teacher.id} 
               className={`teacher-button pop-in ${isPresent ? 'present' : 'absent'}`}
               onClick={() => toggleAttendance(teacher.id)}
-              style={{ animationDelay: `${teacher.id * 0.05}s` }}
+              style={{ animationDelay: `${(index % 10) * 0.05}s` }}
             >
               <span className="status-indicator"></span>
               <span className="teacher-name">{teacher.name}</span>

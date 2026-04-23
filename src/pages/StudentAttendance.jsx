@@ -55,7 +55,11 @@ const StudentAttendance = () => {
           if (tRes.ok) {
             const tData = await tRes.json();
             tData.sort((a,b) => a.name.localeCompare(b.name));
-            setTeachersList(tData);
+            const filteredTeachers = tData.filter(t => {
+              const name = t.name.toLowerCase().trim();
+              return !dataEntryUsers.includes(name) && name !== 'admin';
+            });
+            setTeachersList(filteredTeachers);
           }
         } catch (err) {
           console.error("Failed to fetch teachers", err);
@@ -157,7 +161,7 @@ const StudentAttendance = () => {
     <div className="attendance-container fade-in">
       <div className="attendance-header glass-panel">
         <UserCheck size={40} color="#00d2ff" />
-        <h2>{canAllocate ? "Student Allocation & Attendance" : "My Students' Attendance"}</h2>
+        <h2>{canAllocate ? "Student Allocation & Attendance" : `My Students' Attendance - ${username ? (username.charAt(0).toUpperCase() + username.slice(1)) : 'Teacher'}`}</h2>
         <p>Select a day, then tap a student's name to toggle their status.</p>
         
         <div className="add-student-section fade-in" style={{flexWrap: 'wrap', gap: '10px', justifyContent: 'center'}}>
@@ -236,12 +240,10 @@ const StudentAttendance = () => {
                 <span className="status-indicator"></span>
                 <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1}}>
                   <span className="teacher-name">{student.studentName}</span>
-                  {canAllocate && (
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '4px'}}>
-                      <span className="teacher-badge" style={{fontSize: '0.7rem', opacity: 0.85}}>🧑‍🏫 Teacher: {student.teacherName}</span>
-                      {student.addedBy && <span className="teacher-badge" style={{fontSize: '0.65rem', opacity: 0.6, color: '#00d2ff'}}>✍️ Entered by: {student.addedBy}</span>}
-                    </div>
-                  )}
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '4px'}}>
+                    <span className="teacher-badge" style={{fontSize: '0.7rem', opacity: 0.85}}>🧑‍🏫 Teacher: {student.teacherName || 'Not Assigned'}</span>
+                    {canAllocate && student.addedBy && <span className="teacher-badge" style={{fontSize: '0.65rem', opacity: 0.6, color: '#00d2ff'}}>✍️ Entered by: {student.addedBy}</span>}
+                  </div>
                 </div>
                 <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px'}}>
                   <button 
