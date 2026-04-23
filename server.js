@@ -19,24 +19,40 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-let cachedDb = null;
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
 const connectDB = async () => {
-  if (cachedDb && mongoose.connection.readyState === 1) {
-    return cachedDb;
+  if (cached.conn) {
+    return cached.conn;
   }
-  try {
-    const db = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/vbs2026', {
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
       serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+
+    cached.promise = mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/vbs2026', opts).then((mongooseInstance) => {
+      console.log('Connected to MongoDB');
+      return mongooseInstance;
     });
-    cachedDb = db;
-    console.log('Connected to MongoDB');
-    await initializeData();
-    return db;
-  } catch (err) {
-    console.error('MongoDB connection error:', err);
-    throw err;
   }
+
+  try {
+    cached.conn = await cached.promise;
+    await initializeData();
+  } catch (e) {
+    cached.promise = null;
+    console.error('MongoDB connection error:', e);
+    throw e;
+  }
+
+  return cached.conn;
 };
 
 // Middleware to ensure DB connection before handling API routes
