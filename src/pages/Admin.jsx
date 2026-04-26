@@ -185,8 +185,9 @@ const Admin = () => {
 
         <div className="settings-form">
           <div className="form-group">
-            <label>Event Name:</label>
+            <label htmlFor="eventName">Event Name:</label>
             <input
+              id="eventName"
               type="text"
               name="eventName"
               value={adminSettings.eventName}
@@ -197,8 +198,9 @@ const Admin = () => {
           </div>
 
           <div className="form-group">
-            <label>Start Date:</label>
+            <label htmlFor="startDate">Start Date:</label>
             <input
+              id="startDate"
               type="date"
               name="startDate"
               value={adminSettings.startDate}
@@ -208,8 +210,9 @@ const Admin = () => {
           </div>
 
           <div className="form-group">
-            <label>End Date:</label>
+            <label htmlFor="endDate">End Date:</label>
             <input
+              id="endDate"
               type="date"
               name="endDate"
               value={adminSettings.endDate}
@@ -217,10 +220,10 @@ const Admin = () => {
               disabled={!isEditing}
             />
           </div>
-
           <div className="form-group">
-            <label>Contact Email:</label>
+            <label htmlFor="contactEmail">Contact Email:</label>
             <input
+              id="contactEmail"
               type="email"
               name="contactEmail"
               value={adminSettings.contactEmail}
@@ -231,8 +234,9 @@ const Admin = () => {
           </div>
 
           <div className="form-group">
-            <label>Theme:</label>
+            <label htmlFor="theme">Theme:</label>
             <input
+              id="theme"
               type="text"
               name="theme"
               value={adminSettings.theme}

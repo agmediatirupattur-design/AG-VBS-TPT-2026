@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import './Attendance.css';
 import { UserCheck, Plus, Users, Trash2 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
@@ -11,22 +11,30 @@ const StudentAttendance = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [teachersList, setTeachersList] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState('');
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
   
-  const dataEntryUsers = ["hari", "jeba", "yessaiya", "vignesh", "chandra mohan"];
+  const dataEntryUsers = useMemo(() => ["hari", "jeba", "yessaiya", "vignesh", "chandra mohan"], []);
   const canAllocate = role === 'admin' || dataEntryUsers.includes(username?.toLowerCase()?.trim() || "");
   
   const days = ["27", "28", "29", "30"];
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      try {
-        const res = await fetch('/api/student-attendance');
-        if (res.ok) {
-          const data = await res.json();
-          // Filter students based on role
-          const normalizeName = (name = '') =>
-          name.toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+      setLoadingStudents(true);
+      setLoadingTeachers(canAllocate);
 
+      const normalizeName = (name = '') =>
+        name.toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+
+      try {
+        const studentPromise = fetch('/api/student-attendance');
+        const teacherPromise = canAllocate ? fetch('/api/attendance') : Promise.resolve(null);
+
+        const [studentRes, teacherRes] = await Promise.all([studentPromise, teacherPromise]);
+
+        if (studentRes && studentRes.ok) {
+          const data = await studentRes.json();
           if (canAllocate) {
             setStudents(data);
           } else {
@@ -44,30 +52,37 @@ const StudentAttendance = () => {
             };
             setStudents(data.filter(s => isTeacherMatch(s.teacherName, username)));
           }
+        } else if (studentRes) {
+          console.error('Failed to fetch student attendance:', studentRes.statusText);
+        }
+
+        if (teacherRes) {
+          if (teacherRes.ok) {
+            const tData = await teacherRes.json();
+            const filteredTeachers = (Array.isArray(tData) ? tData : [])
+              .filter(t => {
+                const name = (t.name || '').toLowerCase().trim();
+                return name && !dataEntryUsers.includes(name) && name !== 'admin';
+              })
+              .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            setTeachersList(filteredTeachers);
+            if (!selectedTeacher && filteredTeachers.length > 0) {
+              setSelectedTeacher(filteredTeachers[0].name);
+            }
+          } else {
+            console.error('Failed to fetch teachers:', teacherRes.statusText);
+          }
         }
       } catch (err) {
-        console.error("Failed to fetch student attendance", err);
-      }
-
-      if (canAllocate) {
-        try {
-          const tRes = await fetch('/api/attendance');
-          if (tRes.ok) {
-            const tData = await tRes.json();
-            tData.sort((a,b) => a.name.localeCompare(b.name));
-            const filteredTeachers = tData.filter(t => {
-              const name = t.name.toLowerCase().trim();
-              return !dataEntryUsers.includes(name) && name !== 'admin';
-            });
-            setTeachersList(filteredTeachers);
-          }
-        } catch (err) {
-          console.error("Failed to fetch teachers", err);
-        }
+        console.error('Failed to fetch attendance data', err);
+      } finally {
+        setLoadingStudents(false);
+        setLoadingTeachers(false);
       }
     };
     fetchAttendance();
-  }, [username, role, canAllocate]);
+  }, [username, role, canAllocate, dataEntryUsers]);
 
   const toggleAttendance = (id) => {
     setStudents(students.map(student => {
@@ -166,6 +181,8 @@ const StudentAttendance = () => {
         
         <div className="add-student-section fade-in" style={{flexWrap: 'wrap', gap: '10px', justifyContent: 'center'}}>
           <input 
+            id="studentName"
+            name="studentName"
             type="text" 
             placeholder="Enter student name..." 
             value={newStudentName}
@@ -176,25 +193,35 @@ const StudentAttendance = () => {
           {canAllocate && (
             <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <span style={{ fontSize: '0.8rem', color: '#00d2ff', fontWeight: 'bold' }}>Assign to Teacher:</span>
-              <select 
-                value={selectedTeacher}
-                onChange={(e) => setSelectedTeacher(e.target.value)}
-                style={{
-                  width: '100%', 
-                  padding: '12px', 
-                  borderRadius: '8px', 
-                  background: '#fff', 
-                  color: '#000', 
-                  border: '2px solid #00d2ff',
-                  fontSize: '1rem',
-                  fontWeight: 'bold'
-                }}
-              >
-                <option value="">-- Choose Teacher --</option>
-                {teachersList.map(t => (
-                  <option key={t.id || t._id} value={t.name}>{t.name}</option>
-                ))}
-              </select>
+              {loadingTeachers ? (
+                <div style={{ color: '#fff', padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.2)' }}>
+                  Loading teachers...
+                </div>
+              ) : (
+                <select 
+                  value={selectedTeacher}
+                  onChange={(e) => setSelectedTeacher(e.target.value)}
+                  style={{
+                    width: '100%', 
+                    padding: '12px', 
+                    borderRadius: '8px', 
+                    background: '#fff', 
+                    color: '#000', 
+                    border: '2px solid #00d2ff',
+                    fontSize: '1rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  <option value="">-- Choose Teacher --</option>
+                  {teachersList.length > 0 ? (
+                    teachersList.map(t => (
+                      <option key={t.id || t._id} value={t.name}>{t.name}</option>
+                    ))
+                  ) : (
+                    <option value="">No teachers available</option>
+                  )}
+                </select>
+              )}
             </div>
           )}
           <button className="btn btn-primary add-student-btn" onClick={handleAddStudent}>

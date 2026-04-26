@@ -1,25 +1,55 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import path from 'path';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import multer from 'multer';
 import { fileURLToPath } from 'url';
 
-/* global process */
+/* global process, global */
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'uploads');
+    // Create uploads directory if it doesn't exist
+    require('fs').mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  }
+});
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
+app.use(compression());
 app.use(express.json());
 
 // Connect to MongoDB
 let cached = global.mongoose;
+let dataInitialized = false;
 
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
@@ -27,28 +57,45 @@ if (!cached) {
 
 const connectDB = async () => {
   if (cached.conn) {
+    if (!dataInitialized) {
+      await initializeData();
+      dataInitialized = true;
+    }
     return cached.conn;
   }
 
   if (!cached.promise) {
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/vbs2026';
+    console.log('Attempting to connect to MongoDB:', mongoUri.replace(/\/\/.*@/, '//***:***@'));
+    
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
+      maxPoolSize: 10,
     };
 
-    cached.promise = mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/vbs2026', opts).then((mongooseInstance) => {
-      console.log('Connected to MongoDB');
-      return mongooseInstance;
-    });
+    cached.promise = mongoose.connect(mongoUri, opts)
+      .then((mongooseInstance) => {
+        console.log('Connected to MongoDB successfully');
+        return mongooseInstance;
+      })
+      .catch((err) => {
+        console.error('MongoDB connection failed:', err.message);
+        cached.promise = null;
+        throw err;
+      });
   }
 
   try {
     cached.conn = await cached.promise;
-    await initializeData();
+    if (!dataInitialized) {
+      await initializeData();
+      dataInitialized = true;
+    }
   } catch (e) {
     cached.promise = null;
-    console.error('MongoDB connection error:', e);
+    console.error('MongoDB connection error:', e.message);
     throw e;
   }
 
@@ -61,7 +108,8 @@ app.use(async (req, res, next) => {
     try {
       await connectDB();
     } catch (err) {
-      return res.status(500).json({ error: 'Database connection failed' });
+      console.error('API request failed - DB connection error:', err.message);
+      return res.status(500).json({ error: 'Database connection failed: ' + err.message });
     }
   }
   next();
@@ -76,7 +124,7 @@ const registrationSchema = new mongoose.Schema({
 });
 
 const teacherSchema = new mongoose.Schema({
-  id: Number,
+  id: { type: Number, index: true },
   name: String,
   attendance: {
     "27": { type: Boolean, default: false },
@@ -87,7 +135,7 @@ const teacherSchema = new mongoose.Schema({
 });
 
 const studentSchema = new mongoose.Schema({
-  id: String,
+  id: { type: String, index: true },
   studentName: String,
   teacherName: String,
   addedBy: String,
@@ -105,6 +153,13 @@ const expenseSchema = new mongoose.Schema({
   purchasedBy: String,
   amount: String,
   date: { type: Date, default: Date.now }
+});
+
+const faithClassBookSchema = new mongoose.Schema({
+  className: String,
+  fileName: String,
+  filePath: String,
+  uploadedAt: { type: Date, default: Date.now }
 });
 
 const reportSchema = new mongoose.Schema({
@@ -132,6 +187,7 @@ const Student = mongoose.model('Student', studentSchema);
 const Expense = mongoose.model('Expense', expenseSchema);
 const Report = mongoose.model('Report', reportSchema);
 const Admin = mongoose.model('Admin', adminSchema);
+const FaithClassBook = mongoose.model('FaithClassBook', faithClassBookSchema);
 
 // Initialize default data in MongoDB
 async function initializeData() {
@@ -233,19 +289,19 @@ app.get('/api/attendance', async (req, res) => {
 // Update attendance data for Teachers
 app.post('/api/attendance', async (req, res) => {
   try {
-    const updatedTeachers = req.body;
-    
-    for (const updated of updatedTeachers) {
-      await Teacher.findOneAndUpdate(
-        { id: updated.id },
-        { 
-          name: updated.name,
-          attendance: updated.attendance 
-        },
-        { upsert: true, new: true }
-      );
+    const updatedTeachers = Array.isArray(req.body) ? req.body : [req.body];
+    const operations = updatedTeachers.map(updated => ({
+      updateOne: {
+        filter: { id: updated.id },
+        update: { $set: { name: updated.name, attendance: updated.attendance } },
+        upsert: true
+      }
+    }));
+
+    if (operations.length) {
+      await Teacher.bulkWrite(operations, { ordered: false });
     }
-    
+
     res.status(200).json({ message: 'Success' });
   } catch (err) {
     console.error('Error saving attendance:', err);
@@ -267,14 +323,26 @@ app.get('/api/student-attendance', async (req, res) => {
 // Update student attendance data
 app.post('/api/student-attendance', async (req, res) => {
   try {
-    const updatedStudents = req.body;
-    
-    for (const updated of updatedStudents) {
-      await Student.findOneAndUpdate(
-        { id: updated.id },
-        updated,
-        { upsert: true, new: true }
-      );
+    const updatedStudents = Array.isArray(req.body) ? req.body : [req.body];
+    const operations = updatedStudents.map(updated => {
+      const { _id, __v, ...studentData } = updated;
+      const sanitizedData = {
+        studentName: studentData.studentName,
+        teacherName: studentData.teacherName,
+        addedBy: studentData.addedBy,
+        attendance: studentData.attendance || { "27": false, "28": false, "29": false, "30": false }
+      };
+      return {
+        updateOne: {
+          filter: { id: studentData.id },
+          update: { $set: sanitizedData },
+          upsert: true
+        }
+      };
+    });
+
+    if (operations.length) {
+      await Student.bulkWrite(operations, { ordered: false });
     }
     
     const totalStudents = await Student.countDocuments();
@@ -336,6 +404,74 @@ app.delete('/api/expenses/:id', async (req, res) => {
   } catch (err) {
     console.error('Error deleting expense:', err);
     res.status(500).json({ error: 'Failed to delete expense' });
+  }
+});
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Get all faith class books
+app.get('/api/faith-class-books', async (req, res) => {
+  try {
+    const books = await FaithClassBook.find();
+    res.json(books);
+  } catch (err) {
+    console.error('Error fetching faith class books:', err);
+    res.status(500).json({ error: 'Failed to fetch faith class books' });
+  }
+});
+
+// Upload faith class book PDF
+app.post('/api/faith-class-books/upload', upload.single('pdf'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const { className } = req.body;
+    if (!className) {
+      return res.status(400).json({ error: 'Class name is required' });
+    }
+
+    // Remove existing file for this class
+    await FaithClassBook.deleteMany({ className });
+
+    const newBook = new FaithClassBook({
+      className,
+      fileName: req.file.originalname,
+      filePath: req.file.filename
+    });
+
+    const savedBook = await newBook.save();
+    res.status(201).json({ message: 'File uploaded successfully', book: savedBook });
+  } catch (err) {
+    console.error('Error uploading file:', err);
+    res.status(500).json({ error: 'Failed to upload file' });
+  }
+});
+
+// Delete faith class book
+app.delete('/api/faith-class-books/:className', async (req, res) => {
+  try {
+    const { className } = req.params;
+    const book = await FaithClassBook.findOne({ className });
+    
+    if (book) {
+      // Delete file from filesystem
+      const fs = require('fs');
+      const filePath = path.join(__dirname, 'uploads', book.filePath);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      
+      // Delete from database
+      await FaithClassBook.deleteOne({ className });
+    }
+    
+    res.status(200).json({ message: 'Faith class book deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting faith class book:', err);
+    res.status(500).json({ error: 'Failed to delete faith class book' });
   }
 });
 

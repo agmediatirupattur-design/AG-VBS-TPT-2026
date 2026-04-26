@@ -99,8 +99,10 @@ const Expenses = () => {
           <h3>Add New Bill</h3>
           <form onSubmit={handleAddExpense} className="expense-form">
             <div className="form-group">
-              <label>Bill Name / Description</label>
+              <label htmlFor="billName">Bill Name / Description</label>
               <input 
+                id="billName"
+                name="billName"
                 type="text" 
                 placeholder="e.g. Craft Supplies, Snacks" 
                 value={billName} 
@@ -110,8 +112,10 @@ const Expenses = () => {
             </div>
             
             <div className="form-group">
-              <label>Amount (₹)</label>
+              <label htmlFor="amount">Amount (₹)</label>
               <input 
+                id="amount"
+                name="amount"
                 type="number" 
                 placeholder="Enter amount" 
                 min="0" 
@@ -122,10 +126,11 @@ const Expenses = () => {
               />
             </div>
             
-            <div className="form-row">
-              <div className="form-group">
-                <label>Date of Purchase</label>
+            <div className="form-group">
+                <label htmlFor="purchaseDate">Date of Purchase</label>
                 <input 
+                  id="purchaseDate"
+                  name="purchaseDate"
                   type="date" 
                   value={date} 
                   onChange={(e) => setDate(e.target.value)} 
@@ -133,8 +138,10 @@ const Expenses = () => {
                 />
               </div>
               <div className="form-group">
-                <label>Purchased By</label>
+                <label htmlFor="purchasedBy">Purchased By</label>
                 <input 
+                  id="purchasedBy"
+                  name="purchasedBy"
                   type="text" 
                   placeholder="Person's name"
                   value={purchasedBy} 
@@ -142,7 +149,6 @@ const Expenses = () => {
                   required 
                 />
               </div>
-            </div>
 
             <button type="submit" className="btn btn-primary sumbit-btn" disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : <><Plus size={18} /> Record Expense</>}

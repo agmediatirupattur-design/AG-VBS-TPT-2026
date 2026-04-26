@@ -82,24 +82,24 @@ const Schedule = () => {
                 {isAdmin && isEditing && (
                   <div className="customize-panel" onClick={e => e.stopPropagation()}>
                     <div className="edit-field">
-                      <label>Title</label>
-                      <input value={item.title} onChange={(e) => handleFieldChange(index, 'title', e.target.value)} />
+                      <label htmlFor={`schedule-title-${index}`}>Title</label>
+                      <input id={`schedule-title-${index}`} name={`scheduleTitle-${index}`} value={item.title} onChange={(e) => handleFieldChange(index, 'title', e.target.value)} />
                     </div>
                     <div className="edit-field">
-                      <label>Time</label>
-                      <input value={item.time} onChange={(e) => handleFieldChange(index, 'time', e.target.value)} />
+                      <label htmlFor={`schedule-time-${index}`}>Time</label>
+                      <input id={`schedule-time-${index}`} name={`scheduleTime-${index}`} value={item.time} onChange={(e) => handleFieldChange(index, 'time', e.target.value)} />
                     </div>
                     <div className="edit-field full-width">
                       <label>Description</label>
                       <textarea value={item.desc} onChange={(e) => handleFieldChange(index, 'desc', e.target.value)} rows="3" />
                     </div>
                     <div className="edit-field">
-                      <label>Leader 1</label>
-                      <input value={item.leader1} onChange={(e) => handleFieldChange(index, 'leader1', e.target.value)} />
+                      <label htmlFor={`schedule-leader1-${index}`}>Leader 1</label>
+                      <input id={`schedule-leader1-${index}`} name={`scheduleLeader1-${index}`} value={item.leader1} onChange={(e) => handleFieldChange(index, 'leader1', e.target.value)} />
                     </div>
                     <div className="edit-field">
-                      <label>Leader 2</label>
-                      <input value={item.leader2} onChange={(e) => handleFieldChange(index, 'leader2', e.target.value)} />
+                      <label htmlFor={`schedule-leader2-${index}`}>Leader 2</label>
+                      <input id={`schedule-leader2-${index}`} name={`scheduleLeader2-${index}`} value={item.leader2} onChange={(e) => handleFieldChange(index, 'leader2', e.target.value)} />
                     </div>
                   </div>
                 )}

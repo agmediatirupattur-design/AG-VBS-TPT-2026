@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { BookOpen, Upload, FileText, Edit3, Save, X, Download } from 'lucide-react';
+import { BookOpen, Upload, FileText, Edit3, Save, X, Download, Trash2 } from 'lucide-react';
 import './FaithClassBook.css';
 
 const FaithClassBook = () => {
@@ -10,27 +10,49 @@ const FaithClassBook = () => {
   const isAdmin = role === 'admin';
   
   const [isEditing, setIsEditing] = useState(false);
-  const [classBookContent, setClassBookContent] = useState(() => {
-    const saved = localStorage.getItem('faith-class-book-pdfs');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (err) {
-        console.error('Failed to parse saved faith class books', err);
-      }
-    }
-    return {
-      title: 'Faith Class Book - VBS 2026',
-      description: 'PDF Books for different age groups',
-      classes: [
-        { name: 'Beginner', pdfUrl: null, fileName: '' },
-        { name: 'Primary', pdfUrl: null, fileName: '' },
-        { name: 'Junior', pdfUrl: null, fileName: '' },
-        { name: 'Inter', pdfUrl: null, fileName: '' },
-        { name: 'Senior', pdfUrl: null, fileName: '' }
-      ]
-    };
+  const [classBookContent, setClassBookContent] = useState({
+    title: 'Faith Class Book - VBS 2026',
+    description: 'PDF Books for different age groups',
+    classes: [
+      { name: 'Beginner', pdfUrl: null, fileName: '', className: 'Beginner' },
+      { name: 'Primary', pdfUrl: null, fileName: '', className: 'Primary' },
+      { name: 'Junior', pdfUrl: null, fileName: '', className: 'Junior' },
+      { name: 'Inter', pdfUrl: null, fileName: '', className: 'Inter' },
+      { name: 'Senior', pdfUrl: null, fileName: '', className: 'Senior' }
+    ]
   });
+  const [uploadedBooks, setUploadedBooks] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    fetchUploadedBooks();
+  }, []);
+
+  const fetchUploadedBooks = async () => {
+    try {
+      const response = await fetch('/api/faith-class-books');
+      if (response.ok) {
+        const books = await response.json();
+        setUploadedBooks(books);
+        
+        // Update classBookContent with uploaded books
+        const updatedClasses = classBookContent.classes.map(cls => {
+          const book = books.find(b => b.className === cls.className);
+          if (book) {
+            return {
+              ...cls,
+              pdfUrl: `/uploads/${book.filePath}`,
+              fileName: book.fileName
+            };
+          }
+          return cls;
+        });
+        setClassBookContent({ ...classBookContent, classes: updatedClasses });
+      }
+    } catch (err) {
+      console.error('Failed to fetch uploaded books:', err);
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -38,43 +60,75 @@ const FaithClassBook = () => {
 
   const handleSave = () => {
     setIsEditing(false);
-    try {
-      localStorage.setItem('faith-class-book-pdfs', JSON.stringify(classBookContent));
-    } catch (err) {
-      alert("Error saving: The PDF files might be too large for local storage.");
-      console.error(err);
-    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    const saved = localStorage.getItem('faith-class-book-pdfs');
-    if (saved) {
-      setClassBookContent(JSON.parse(saved));
+    fetchUploadedBooks(); // Refresh from server
+  };
+
+  const handleFileUpload = async (index, event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      alert("Please upload a valid PDF file.");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      alert("File size must be less than 10MB.");
+      return;
+    }
+
+    setUploading(true);
+    const className = classBookContent.classes[index].className;
+    
+    try {
+      const formData = new FormData();
+      formData.append('pdf', file);
+      formData.append('className', className);
+
+      const response = await fetch('/api/faith-class-books/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert('File uploaded successfully!');
+        fetchUploadedBooks(); // Refresh the list
+      } else {
+        const error = await response.json();
+        alert(`Upload failed: ${error.error}`);
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
-  const handleFileUpload = (index, event) => {
-    const file = event.target.files[0];
-    if (file && file.type === "application/pdf") {
-      // Check size < 2MB to prevent localStorage overflow
-      if (file.size > 2 * 1024 * 1024) {
-        alert("Warning: File size is large. It might exceed local storage quota.");
+  const handleDeleteBook = async (className) => {
+    if (!window.confirm(`Are you sure you want to delete the ${className} faith class book?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/faith-class-books/${className}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        alert('Book deleted successfully!');
+        fetchUploadedBooks(); // Refresh the list
+      } else {
+        alert('Failed to delete book.');
       }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const updatedClasses = [...classBookContent.classes];
-        updatedClasses[index] = {
-          ...updatedClasses[index],
-          pdfUrl: e.target.result,
-          fileName: file.name
-        };
-        setClassBookContent({ ...classBookContent, classes: updatedClasses });
-      };
-      reader.readAsDataURL(file);
-    } else if (file) {
-      alert("Please upload a valid PDF file.");
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete book.');
     }
   };
 
@@ -118,8 +172,10 @@ const FaithClassBook = () => {
         {isEditing && (
           <div className="edit-form glass-panel">
             <div className="form-group">
-              <label>Title:</label>
+              <label htmlFor="classBookTitle">Title:</label>
               <input 
+                id="classBookTitle"
+                name="classBookTitle"
                 type="text" 
                 value={classBookContent.title}
                 onChange={(e) => updateContent('title', e.target.value)}
@@ -127,8 +183,10 @@ const FaithClassBook = () => {
               />
             </div>
             <div className="form-group">
-              <label>Description:</label>
+              <label htmlFor="classBookDescription">Description:</label>
               <textarea 
+                id="classBookDescription"
+                name="classBookDescription"
                 value={classBookContent.description}
                 onChange={(e) => updateContent('description', e.target.value)}
                 className="edit-textarea"
@@ -150,6 +208,8 @@ const FaithClassBook = () => {
                   <div className="file-upload-wrapper" style={{ padding: '15px', border: '2px dashed rgba(255,255,255,0.2)', borderRadius: '10px' }}>
                     <Upload size={24} color="#00d2ff" style={{ marginBottom: '10px' }} />
                     <input 
+                      id={`classBookFile-${index}`}
+                      name={`classBookFile-${index}`}
                       type="file" 
                       accept="application/pdf" 
                       onChange={(e) => handleFileUpload(index, e)}
