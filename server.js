@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'uploads');
+    const uploadDir = path.join(process.cwd(), 'uploads');
     // Create uploads directory if it doesn't exist
     require('fs').mkdirSync(uploadDir, { recursive: true });
     cb(null, uploadDir);
@@ -510,7 +510,7 @@ app.delete('/api/faith-class-books/:className', async (req, res) => {
     if (book) {
       // Delete file from filesystem
       const fs = require('fs');
-      const filePath = path.join(__dirname, 'uploads', book.filePath);
+      const filePath = path.join(process.cwd(), 'uploads', book.filePath);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
@@ -577,12 +577,15 @@ app.post('/api/reports', async (req, res) => {
   }
 });
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(process.cwd(), 'dist')));
 
 // Handle React routing, return all requests to React app
-app.get(/(.*)/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
 });
 
 // Start server for local development
