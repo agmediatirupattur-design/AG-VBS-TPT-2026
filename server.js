@@ -192,47 +192,53 @@ const FaithClassBook = mongoose.model('FaithClassBook', faithClassBookSchema);
 // Initialize default data in MongoDB
 async function initializeData() {
   try {
-    // Initialize teachers if not exists
-    const teacherCount = await Teacher.countDocuments();
-    if (teacherCount === 0) {
-      const defaultTeachers = [
-        { id: 1, name: "Sis. Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 2, name: "Sharmila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 3, name: "Sis. Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 4, name: "Sis. Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 5, name: "Sis. Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 6, name: "Jecitha", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 7, name: "Sofia", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 8, name: "Keerthana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 9, name: "Sis. Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 10, name: "Sis. Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 11, name: "Priya Angel", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 12, name: "Preethi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 13, name: "Sis. Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 14, name: "Sis. Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 15, name: "Sis. Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 16, name: "Pr. Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 17, name: "Jessica", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 18, name: "Kishori", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 19, name: "Shekina", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 20, name: "Sis. Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 21, name: "Sis. Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 22, name: "Sis. Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 23, name: "Bro. Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 24, name: "Sis. Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 25, name: "Sis. Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 26, name: "Sis. Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 27, name: "Sis. Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 28, name: "Bro. Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 29, name: "Hari", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 30, name: "Jeba", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 31, name: "Yessaiya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 32, name: "Vignesh", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 33, name: "Chandra Mohan", attendance: { "27": false, "28": false, "29": false, "30": false } }
-      ];
-      await Teacher.insertMany(defaultTeachers);
-      console.log('Initialized default teachers');
+    // Initialize teachers - ensure all default teachers exist
+    const defaultTeachers = [
+      { id: 1, name: "Sis. Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 2, name: "Sharmila", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 3, name: "Sis. Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 4, name: "Sis. Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 5, name: "Sis. Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 6, name: "Jecitha", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 7, name: "Sofia", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 8, name: "Keerthana", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 9, name: "Sis. Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 10, name: "Sis. Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 11, name: "Priya Angel", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 12, name: "Preethi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 13, name: "Sis. Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 14, name: "Sis. Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 15, name: "Sis. Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 16, name: "Pr. Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 17, name: "Jessica", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 18, name: "Kishori", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 19, name: "Shekina", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 20, name: "Sis. Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 21, name: "Sis. Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 22, name: "Sis. Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 23, name: "Bro. Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 24, name: "Sis. Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 25, name: "Sis. Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 26, name: "Sis. Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 27, name: "Sis. Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 28, name: "Bro. Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 29, name: "Hari", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 30, name: "Jeba", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 31, name: "Yessaiya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 32, name: "Vignesh", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 33, name: "Chandra Mohan", attendance: { "27": false, "28": false, "29": false, "30": false } }
+    ];
+
+    // Check and add any missing teachers
+    for (const teacher of defaultTeachers) {
+      const existingTeacher = await Teacher.findOne({ id: teacher.id });
+      if (!existingTeacher) {
+        await Teacher.create(teacher);
+        console.log(`Added missing teacher: ${teacher.name}`);
+      }
     }
+
+    console.log('Teacher initialization check completed');
   } catch (err) {
     console.error('Error initializing data:', err);
   }
@@ -584,9 +590,10 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use(express.static(path.join(process.cwd(), 'dist')));
 
 // Handle React routing, return all requests to React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
-});
+// Temporarily disabled catch-all route for debugging
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
+// });
 
 // Start server for local development
 if (process.env.NODE_ENV !== 'production') {

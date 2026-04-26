@@ -95,18 +95,23 @@ const Attendance = () => {
   }, [username, role]);
 
   const toggleAttendance = (id) => {
-    setTeachers(teachers.map(teacher => {
+    const updatedTeachers = teachers.map(teacher => {
       if (teacher.id === id) {
-        return {
+        const updatedTeacher = {
           ...teacher,
           attendance: {
             ...teacher.attendance,
             [selectedDay]: !teacher.attendance[selectedDay]
           }
         };
+        return updatedTeacher;
       }
       return teacher;
-    }));
+    });
+    
+    setTeachers(updatedTeachers);
+    // Save to localStorage immediately for persistence
+    saveAttendanceLocally(updatedTeachers);
   };
 
   const saveAttendanceLocally = (attendanceData) => {
@@ -125,6 +130,8 @@ const Attendance = () => {
         throw new Error('Failed to save attendance');
       }
 
+      // Save to localStorage even on success to keep in sync
+      saveAttendanceLocally(teachers);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {

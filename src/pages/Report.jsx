@@ -64,16 +64,42 @@ const Report = () => {
       console.error("Failed to fetch teacher attendance data", err);
     }
 
-    // Only use localStorage as fallback when server data is unavailable
-    if (attendanceData.length === 0) {
-      try {
-        const cached = localStorage.getItem('vbs-attendance');
-        if (cached && cached !== 'undefined') {
-          attendanceData = JSON.parse(cached);
-        }
-      } catch (err) {
-        console.warn("Issue parsing cached attendance", err);
+    // Merge with localStorage data to ensure locally saved attendance is included
+    try {
+      const localAttendance = localStorage.getItem('vbs-attendance');
+      if (localAttendance && localAttendance !== 'undefined') {
+        const localData = JSON.parse(localAttendance);
+        
+        // Create a map of server data by id for quick lookup
+        const serverMap = new Map(attendanceData.map(teacher => [teacher.id, teacher]));
+        
+        // Merge: prefer local data if it exists, otherwise use server data
+        const merged = localData.map(localTeacher => {
+          const serverTeacher = serverMap.get(localTeacher.id);
+          if (serverTeacher) {
+            // Merge attendance: local takes precedence for each day
+            return {
+              ...serverTeacher,
+              attendance: {
+                ...serverTeacher.attendance,
+                ...localTeacher.attendance
+              }
+            };
+          }
+          return localTeacher;
+        });
+        
+        // Add any server-only teachers that aren't in localStorage
+        attendanceData.forEach(serverTeacher => {
+          if (!localData.some(local => local.id === serverTeacher.id)) {
+            merged.push(serverTeacher);
+          }
+        });
+        
+        attendanceData = merged;
       }
+    } catch (err) {
+      console.warn("Issue parsing cached attendance for merge", err);
     }
 
     setTeacherAttendance(attendanceData);
