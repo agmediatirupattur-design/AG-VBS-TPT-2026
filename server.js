@@ -172,10 +172,70 @@ app.get('/auth/github/callback',
 
 app.get('/auth/user', (req, res) => {
   if (req.isAuthenticated()) {
+    let userName = req.user.name || req.user.username;
+    
+    // Normalize name for matching
+    const normalizeName = (name = '') =>
+      name?.toString().toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+    
+    const normalizedUser = normalizeName(userName);
+    
+    // Map normalized names to display names for teachers
+    const teacherNameMap = {
+      gethsiyal: 'Sis. Gethsiyal',
+      sharmila: 'Sharmila',
+      gracepriya: 'Sis. Gracepriya',
+      archana: 'Sis. Archana',
+      esther: 'Sis. Esther',
+      jecitha: 'Jecitha',
+      sofia: 'Sofia',
+      keerthana: 'Keerthana',
+      jamuna: 'Sis. Jamuna',
+      lakshmi: 'Sis. Lakshmi',
+      priya: 'Priya Angel',
+      preethi: 'Preethi',
+      megala: 'Sis. Megala',
+      puspalatha: 'Sis. Puspalatha',
+      priyadarshini: 'Sis. Priyadarshini',
+      yuvashri: 'Pr. Yuvashri',
+      jessica: 'Jessica',
+      kishori: 'Kishori',
+      shekina: 'Shekina',
+      shamili: 'Sis. Shamili',
+      nithya: 'Sis. Nithya',
+      amutha: 'Sis. Amutha Jose',
+      lambert: 'Bro. Lambert',
+      dharani: 'Sis. Dharani',
+      remi: 'Sis. Remi',
+      vennila: 'Sis. Vennila',
+      rajmary: 'Sis. Rajmary',
+      vasudevan: 'Bro. Vasudevan',
+      hari: 'Hari',
+      jeba: 'Jeba',
+      yessaiya: 'Yessaiya',
+      vignesh: 'Vignesh',
+      'chandra mohan': 'Chandra Mohan'
+    };
+    
+    // Check if it's an admin based on email or username
+    let role = 'user';
+    const adminEmails = ['pr.sam@example.com', 'gabril@example.com', 'ashok@example.com', 'yesuraja@example.com']; // Update with actual emails
+    const adminUsernames = ['pr.sam', 'gabril', 'ashok', 'yesuraja'];
+    
+    if (req.user.email && adminEmails.includes(req.user.email.toLowerCase())) {
+      role = 'admin';
+      userName = 'Admin';
+    } else if (adminUsernames.includes(normalizedUser)) {
+      role = 'admin';
+      userName = 'Admin';
+    } else if (teacherNameMap[normalizedUser]) {
+      userName = teacherNameMap[normalizedUser];
+    }
+    
     res.json({
       authenticated: true,
-      user: req.user,
-      role: 'user' // Default role for GitHub users
+      user: { ...req.user, name: userName },
+      role: role
     });
   } else {
     res.json({ authenticated: false });
@@ -366,34 +426,34 @@ app.get('/api/attendance', async (req, res) => {
     if (teachers.length === 0) {
       console.log('No teachers found, initializing default teachers...');
       const defaultTeachers = [
-        { id: 1, name: "Sis. Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 1, name: "Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 2, name: "Sharmila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 3, name: "Sis. Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 4, name: "Sis. Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 5, name: "Sis. Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 3, name: "Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 4, name: "Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 5, name: "Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 6, name: "Jecitha", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 7, name: "Sofia", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 8, name: "Keerthana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 9, name: "Sis. Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 10, name: "Sis. Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 9, name: "Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 10, name: "Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 11, name: "Priya Angel", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 12, name: "Preethi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 13, name: "Sis. Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 14, name: "Sis. Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 15, name: "Sis. Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 16, name: "Pr. Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 13, name: "Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 14, name: "Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 15, name: "Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 16, name: "Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 17, name: "Jessica", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 18, name: "Kishori", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 19, name: "Shekina", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 20, name: "Sis. Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 21, name: "Sis. Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 22, name: "Sis. Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 23, name: "Bro. Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 24, name: "Sis. Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 25, name: "Sis. Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 26, name: "Sis. Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 27, name: "Sis. Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 28, name: "Bro. Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 20, name: "Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 21, name: "Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 22, name: "Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 23, name: "Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 24, name: "Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 25, name: "Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 26, name: "Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 27, name: "Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
+        { id: 28, name: "Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 29, name: "Hari", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 30, name: "Jeba", attendance: { "27": false, "28": false, "29": false, "30": false } },
         { id: 31, name: "Yessaiya", attendance: { "27": false, "28": false, "29": false, "30": false } },
