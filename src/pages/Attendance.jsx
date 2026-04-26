@@ -74,18 +74,8 @@ const Attendance = () => {
       if (role === 'admin') {
         setTeachers(finalData);
       } else if (username) {
-        // Filter by name so teachers only see themselves
-        const cleanUser = username.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
-        const matchedTeachers = finalData.filter(teacher => {
-          const cleanTeacher = teacher.name.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
-          return (
-            teacher.name === username ||
-            cleanTeacher === cleanUser ||
-            cleanTeacher.includes(cleanUser) || 
-            cleanUser.includes(cleanTeacher)
-          );
-        });
-        setTeachers(matchedTeachers);
+        // For teachers, show all teachers but they can only edit their own
+        setTeachers(finalData);
       } else {
         setTeachers([]);
       }
@@ -95,6 +85,20 @@ const Attendance = () => {
   }, [username, role]);
 
   const toggleAttendance = (id) => {
+    // For non-admin users, only allow editing their own attendance
+    if (role !== 'admin') {
+      const teacher = teachers.find(t => t.id === id);
+      if (!teacher) return;
+      
+      const cleanUser = username.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+      const cleanTeacher = teacher.name.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+      
+      if (teacher.name !== username && cleanTeacher !== cleanUser) {
+        alert("You can only mark your own attendance.");
+        return;
+      }
+    }
+    
     const updatedTeachers = teachers.map(teacher => {
       if (teacher.id === id) {
         const updatedTeacher = {
@@ -170,16 +174,33 @@ const Attendance = () => {
       <div className="teacher-grid">
         {teachers.map((teacher, index) => {
           const isPresent = teacher.attendance && teacher.attendance[selectedDay];
+          
+          // Check if this teacher can be edited by current user
+          let canEdit = true;
+          if (role !== 'admin') {
+            const cleanUser = username.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+            const cleanTeacher = teacher.name.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+            canEdit = teacher.name === username || cleanTeacher === cleanUser;
+          }
+          
           return (
             <button 
               key={teacher.id} 
-              className={`teacher-button pop-in ${isPresent ? 'present' : 'absent'}`}
-              onClick={() => toggleAttendance(teacher.id)}
-              style={{ animationDelay: `${(index % 10) * 0.05}s` }}
+              className={`teacher-button pop-in ${isPresent ? 'present' : 'absent'} ${!canEdit ? 'disabled' : ''}`}
+              onClick={() => canEdit && toggleAttendance(teacher.id)}
+              style={{ 
+                animationDelay: `${(index % 10) * 0.05}s`,
+                cursor: canEdit ? 'pointer' : 'not-allowed',
+                opacity: canEdit ? 1 : 0.6
+              }}
+              disabled={!canEdit}
             >
               <span className="status-indicator"></span>
               <span className="teacher-name">{teacher.name}</span>
-              <span className="status-text">{isPresent ? `Present on ${selectedDay}` : `Absent on ${selectedDay}`}</span>
+              <span className="status-text">
+                {isPresent ? `Present on ${selectedDay}` : `Absent on ${selectedDay}`}
+                {!canEdit && ' (View Only)'}
+              </span>
             </button>
           );
         })}
