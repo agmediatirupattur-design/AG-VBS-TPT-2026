@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { User, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { User, Lock, ArrowRight, Sparkles, Github } from 'lucide-react';
 import './Login.css';
 
 const Login = () => {
@@ -25,6 +25,10 @@ const Login = () => {
 
     animationDelay: `${Math.random() * 5}s`
   })));
+
+  const handleGitHubLogin = () => {
+    window.location.href = '/auth/github';
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -158,6 +162,18 @@ const Login = () => {
               </span>
             </button>
           </form>
+
+          <div className="divider slide-up-3">
+            <span>or</span>
+          </div>
+
+          <button
+            onClick={handleGitHubLogin}
+            className="btn btn-secondary github-btn slide-up-3"
+          >
+            <Github size={20} />
+            <span>Continue with GitHub</span>
+          </button>
 
           <div className="login-help slide-up-4">
             <p>Teacher Login Instructions:</p>

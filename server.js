@@ -5,6 +5,9 @@ import path from 'path';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import multer from 'multer';
+import passport from 'passport';
+import session from 'express-session';
+import { Strategy as GitHubStrategy } from 'passport-github2';
 import { fileURLToPath } from 'url';
 
 /* global process, global */
@@ -42,6 +45,45 @@ const upload = multer({
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Passport configuration
+passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: process.env.GITHUB_CALLBACK_URL || "http://localhost:5000/auth/github/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    // Here you can save user info to database or just return profile
+    return done(null, {
+      id: profile.id,
+      username: profile.username,
+      name: profile.displayName,
+      email: profile.emails ? profile.emails[0].value : null,
+      avatar: profile.photos ? profile.photos[0].value : null
+    });
+  }
+));
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(cors());
 app.use(compression());
@@ -113,6 +155,40 @@ app.use(async (req, res, next) => {
     }
   }
   next();
+});
+
+// GitHub Authentication Routes
+app.get('/auth/github',
+  passport.authenticate('github', { scope: ['user:email'] })
+);
+
+app.get('/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect to frontend
+    res.redirect('/?login=success');
+  }
+);
+
+app.get('/auth/user', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({
+      authenticated: true,
+      user: req.user,
+      role: 'user' // Default role for GitHub users
+    });
+  } else {
+    res.json({ authenticated: false });
+  }
+});
+
+app.post('/auth/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.json({ success: true });
+  });
 });
 
 // Define schemas
