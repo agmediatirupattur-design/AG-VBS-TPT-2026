@@ -19,13 +19,18 @@ const StudentAttendance = () => {
   
   const days = ["27", "28", "29", "30"];
 
+  const normalizeName = (name = '') =>
+    name?.toString().toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+
+  const getTeacherName = (student) => student.teacherName || student.name || 'Not Assigned';
+
   useEffect(() => {
     const fetchAttendance = async () => {
       setLoadingStudents(true);
       setLoadingTeachers(canAllocate);
 
-      const normalizeName = (name = '') =>
-        name.toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+      const localizeName = (name = '') =>
+        name.toString().toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
 
       try {
         const studentPromise = fetch('/api/student-attendance');
@@ -39,8 +44,8 @@ const StudentAttendance = () => {
             setStudents(data);
           } else {
             const isTeacherMatch = (storedName, currentName) => {
-              const stored = normalizeName(storedName);
-              const current = normalizeName(currentName);
+              const stored = localizeName(storedName);
+              const current = localizeName(currentName);
               const storedFirst = stored.split(' ')[0];
               const currentFirst = current.split(' ')[0];
               return (
@@ -50,7 +55,7 @@ const StudentAttendance = () => {
                 storedFirst === currentFirst
               );
             };
-            setStudents(data.filter(s => isTeacherMatch(s.teacherName, username)));
+            setStudents(data.filter(s => isTeacherMatch(getTeacherName(s), username)));
           }
         } else if (studentRes) {
           console.error('Failed to fetch student attendance:', studentRes.statusText);
@@ -64,11 +69,11 @@ const StudentAttendance = () => {
                 const name = (t.name || '').toLowerCase().trim();
                 return name && name !== 'admin';
               })
-              .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+              .sort((a, b) => ((a.name || a.teacherName || '').localeCompare(b.name || b.teacherName || '')));
 
             setTeachersList(filteredTeachers);
             if (!selectedTeacher && filteredTeachers.length > 0) {
-              setSelectedTeacher(filteredTeachers[0].name);
+              setSelectedTeacher(filteredTeachers[0].name || filteredTeachers[0].teacherName || '');
             }
           } else {
             console.error('Failed to fetch teachers:', teacherRes.statusText);
@@ -81,6 +86,7 @@ const StudentAttendance = () => {
         setLoadingTeachers(false);
       }
     };
+
     fetchAttendance();
   }, [username, role, canAllocate, dataEntryUsers]);
 
@@ -268,7 +274,7 @@ const StudentAttendance = () => {
                 <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1}}>
                   <span className="teacher-name">{student.studentName}</span>
                   <div style={{display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '4px'}}>
-                    <span className="teacher-badge" style={{fontSize: '0.7rem', opacity: 0.85}}>🧑‍🏫 Teacher: {student.teacherName || 'Not Assigned'}</span>
+                    <span className="teacher-badge" style={{fontSize: '0.7rem', opacity: 0.85}}>🧑‍🏫 Teacher: {getTeacherName(student)}</span>
                     {canAllocate && student.addedBy && <span className="teacher-badge" style={{fontSize: '0.65rem', opacity: 0.6, color: '#00d2ff'}}>✍️ Entered by: {student.addedBy}</span>}
                   </div>
                 </div>

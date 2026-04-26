@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(true);
           setRole(data.role || 'user');
           setUsername(data.user.name || data.user.username);
+          setLoading(false);
           return;
         }
       } catch (err) {

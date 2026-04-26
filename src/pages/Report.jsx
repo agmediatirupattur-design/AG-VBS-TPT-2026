@@ -184,8 +184,9 @@ const Report = () => {
       const present28 = att["28"] ? "Present" : "Absent";
       const present29 = att["29"] ? "Present" : "Absent";
       const present30 = att["30"] ? "Present" : "Absent";
+      const teacherName = teacher.name || teacher.teacherName || 'Unknown Teacher';
       const total = (att["27"] ? 1 : 0) + (att["28"] ? 1 : 0) + (att["29"] ? 1 : 0) + (att["30"] ? 1 : 0);
-      return [`"${teacher.name}"`, present27, present28, present29, present30, total];
+      return [`"${teacherName}"`, present27, present28, present29, present30, total];
     });
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -344,7 +345,7 @@ const Report = () => {
                 return (
                   <tr key={student.id}>
                     <td style={{fontWeight: '600'}}>{student.studentName}</td>
-                    <td style={{opacity: 0.8, fontSize: '0.9rem'}}>{student.teacherName}</td>
+                    <td style={{opacity: 0.8, fontSize: '0.9rem'}}>{student.teacherName || student.name || 'Not Assigned'}</td>
                     <td>{att["27"] ? "✅" : "❌"}</td>
                     <td>{att["28"] ? "✅" : "❌"}</td>
                     <td>{att["29"] ? "✅" : "❌"}</td>

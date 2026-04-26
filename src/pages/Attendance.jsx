@@ -11,6 +11,11 @@ const Attendance = () => {
   
   const days = ["27", "28", "29", "30"];
 
+  const normalizeName = (name = '') =>
+    name?.toString().toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+
+  const getDisplayName = (teacher) => teacher.name || teacher.teacherName || 'Unknown Teacher';
+
   useEffect(() => {
     const fetchAttendance = async () => {
       let data = [];
@@ -90,10 +95,11 @@ const Attendance = () => {
       const teacher = teachers.find(t => t.id === id);
       if (!teacher) return;
       
-      const cleanUser = username.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
-      const cleanTeacher = teacher.name.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+      const teacherDisplayName = getDisplayName(teacher);
+      const cleanUser = normalizeName(username || '');
+      const cleanTeacher = normalizeName(teacherDisplayName);
       
-      if (teacher.name !== username && cleanTeacher !== cleanUser) {
+      if (teacherDisplayName !== username && cleanTeacher !== cleanUser) {
         alert("You can only mark your own attendance.");
         return;
       }
@@ -174,13 +180,14 @@ const Attendance = () => {
       <div className="teacher-grid">
         {teachers.map((teacher, index) => {
           const isPresent = teacher.attendance && teacher.attendance[selectedDay];
+          const teacherDisplayName = getDisplayName(teacher);
           
           // Check if this teacher can be edited by current user
           let canEdit = true;
           if (role !== 'admin') {
-            const cleanUser = username.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
-            const cleanTeacher = teacher.name.toLowerCase().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
-            canEdit = teacher.name === username || cleanTeacher === cleanUser;
+            const cleanUser = normalizeName(username || '');
+            const cleanTeacher = normalizeName(teacherDisplayName);
+            canEdit = teacherDisplayName === username || cleanTeacher === cleanUser;
           }
           
           return (
@@ -196,7 +203,7 @@ const Attendance = () => {
               disabled={!canEdit}
             >
               <span className="status-indicator"></span>
-              <span className="teacher-name">{teacher.name}</span>
+              <span className="teacher-name">{teacherDisplayName}</span>
               <span className="status-text">
                 {isPresent ? `Present on ${selectedDay}` : `Absent on ${selectedDay}`}
                 {!canEdit && ' (View Only)'}

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { User, Lock, ArrowRight, Sparkles, Github } from 'lucide-react';
+import { User, Lock, ArrowRight, Sparkles, GitBranch } from 'lucide-react';
 import './Login.css';
 
 const Login = () => {
@@ -171,7 +171,7 @@ const Login = () => {
             onClick={handleGitHubLogin}
             className="btn btn-secondary github-btn slide-up-3"
           >
-            <Github size={20} />
+            <GitBranch size={20} />
             <span>Continue with GitHub</span>
           </button>
 
