@@ -62,7 +62,7 @@ const StudentAttendance = () => {
             const filteredTeachers = (Array.isArray(tData) ? tData : [])
               .filter(t => {
                 const name = (t.name || '').toLowerCase().trim();
-                return name && !dataEntryUsers.includes(name) && name !== 'admin';
+                return name && name !== 'admin';
               })
               .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
