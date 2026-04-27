@@ -85,7 +85,14 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(cors());
+// Enhanced CORS configuration for cross-network access
+app.use(cors({
+  origin: true, // Allow all origins
+  credentials: true, // Allow credentials
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+}));
 app.use(compression());
 app.use(express.json());
 

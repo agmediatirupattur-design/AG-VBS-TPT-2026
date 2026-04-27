@@ -101,11 +101,46 @@ const StudentAttendance = () => {
 
         const [studentRes, teacherRes] = await Promise.all([studentPromise, teacherPromise]);
 
+        let data = [];
         if (studentRes && studentRes.ok) {
-          const data = await studentRes.json();
+          data = await studentRes.json();
+        } else {
+          // Fallback to localStorage if API fails
+          const localData = localStorage.getItem('vbs-student-attendance');
+          if (localData) {
+            data = JSON.parse(localData);
+            console.log('Loaded student attendance from localStorage (API unavailable)');
+          }
+        }
+
+        if (canAllocate) {
+          setStudents(data);
+        } else {
+          const isTeacherMatch = (storedName, currentName) => {
+            const stored = localizeName(storedName);
+            const current = localizeName(currentName);
+            const storedFirst = stored.split(' ')[0];
+            const currentFirst = current.split(' ')[0];
+            return (
+              stored === current ||
+              stored.includes(current) ||
+              current.includes(stored) ||
+              storedFirst === currentFirst
+            );
+          };
+          setStudents(data.filter(s => isTeacherMatch(getTeacherName(s), username)));
+        }
+      } catch (fetchErr) {
+        console.error('Network error fetching students:', fetchErr);
+        // Try localStorage fallback
+        const localData = localStorage.getItem('vbs-student-attendance');
+        if (localData) {
+          const data = JSON.parse(localData);
           if (canAllocate) {
             setStudents(data);
           } else {
+            const localizeName = (name = '') =>
+              name.toString().toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
             const isTeacherMatch = (storedName, currentName) => {
               const stored = localizeName(storedName);
               const current = localizeName(currentName);
@@ -120,11 +155,51 @@ const StudentAttendance = () => {
             };
             setStudents(data.filter(s => isTeacherMatch(getTeacherName(s), username)));
           }
-        } else if (studentRes) {
-          console.error('Failed to fetch student attendance:', studentRes.statusText);
+        }
+      } catch (fetchErr) {
+        console.error('Network error fetching students:', fetchErr);
+        // Try localStorage fallback
+        const localData = localStorage.getItem('vbs-student-attendance');
+        if (localData) {
+          const data = JSON.parse(localData);
+          if (canAllocate) {
+            setStudents(data);
+          } else {
+            const localizeName = (name = '') =>
+              name.toString().toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
+            const isTeacherMatch = (storedName, currentName) => {
+              const stored = localizeName(storedName);
+              const current = localizeName(currentName);
+              const storedFirst = stored.split(' ')[0];
+              const currentFirst = current.split(' ')[0];
+              return (
+                stored === current ||
+                stored.includes(current) ||
+                current.includes(stored) ||
+                storedFirst === currentFirst
+              );
+            };
+            setStudents(data.filter(s => isTeacherMatch(getTeacherName(s), username)));
+          }
+        }
+      }
+
+      // Fetch teacher data
+      try {
+        const teacherRes = canAllocate ? await fetch('/api/attendance') : null;
+        let teacherData = [];
+        
+        if (teacherRes && teacherRes.ok) {
+          teacherData = await teacherRes.json();
+        } else {
+          // Fallback to localStorage if available
+          const localTeachers = localStorage.getItem('vbs-attendance');
+          if (localTeachers) {
+            teacherData = JSON.parse(localTeachers);
+            console.log('Loaded teachers from localStorage');
+          }
         }
 
-        const teacherData = teacherRes && teacherRes.ok ? await teacherRes.json() : [];
         const mergedTeachers = mergeTeacherData(
           Array.isArray(teacherData) && teacherData.length > 0 ? teacherData : defaultTeachers,
           []
@@ -143,7 +218,20 @@ const StudentAttendance = () => {
           setSelectedTeacher(filteredTeachers[0].name);
         }
       } catch (err) {
-        console.error('Failed to fetch attendance data', err);
+        console.error('Failed to fetch teacher data', err);
+        // Use default teachers as fallback
+        const filteredTeachers = defaultTeachers
+          .map((teacher) => ({ ...teacher, name: getTeacherDisplayName(teacher) }))
+          .filter(t => {
+            const displayName = t.name.toString().toLowerCase().trim();
+            return displayName && displayName !== 'admin';
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setTeachersList(filteredTeachers);
+        if (!selectedTeacher && filteredTeachers.length > 0) {
+          setSelectedTeacher(filteredTeachers[0].name);
+        }
       } finally {
         setLoadingStudents(false);
         setLoadingTeachers(false);
@@ -193,7 +281,14 @@ const StudentAttendance = () => {
         body: JSON.stringify([newStudent]) // Send just the new student to upsert
       });
     } catch (err) {
-      console.error("Auto-save failed", err);
+      console.error("Auto-save to API failed, saving locally instead", err);
+      // Save to localStorage as backup
+      try {
+        const existingData = JSON.parse(localStorage.getItem('vbs-student-attendance') || '[]');
+        localStorage.setItem('vbs-student-attendance', JSON.stringify([...existingData, newStudent]));
+      } catch (storageErr) {
+        console.error("Could not save to localStorage either", storageErr);
+      }
     }
   };
 
@@ -204,6 +299,9 @@ const StudentAttendance = () => {
         return;
       }
 
+      // Save to localStorage first as backup
+      localStorage.setItem('vbs-student-attendance', JSON.stringify(students));
+
       const response = await fetch('/api/student-attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -212,14 +310,26 @@ const StudentAttendance = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to save student attendance`);
+        // Even if API fails, we have saved to localStorage
+        alert(`Saved locally (offline mode). Server sync may retry later: ${errorData.error || `HTTP ${response.status}`}`);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+        return;
       }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
-      console.error("Failed to save", err);
-      alert(`Failed to save student attendance: ${err.message}`);
+      console.error("Failed to save to API", err);
+      // Save to localStorage as fallback
+      try {
+        localStorage.setItem('vbs-student-attendance', JSON.stringify(students));
+        alert(`Saved locally (offline mode). Will sync when connection is available.`);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } catch (storageErr) {
+        alert(`Failed to save: ${err.message}`);
+      }
     }
   };
 

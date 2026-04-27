@@ -63,12 +63,32 @@ const Admin = () => {
       }
 
       // Fetch student attendance
-      const studentRes = await fetch('/api/student-attendance');
-      const students = studentRes.ok ? await studentRes.json() : [];
+      let students = [];
+      try {
+        const studentRes = await fetch('/api/student-attendance');
+        students = studentRes.ok ? await studentRes.json() : [];
+      } catch {
+        // Try localStorage fallback
+        const localStudents = localStorage.getItem('vbs-student-attendance');
+        if (localStudents) {
+          students = JSON.parse(localStudents);
+          console.log('Loaded student attendance from localStorage (API unavailable)');
+        }
+      }
 
       // Fetch expenses
-      const expenseRes = await fetch('/api/expenses');
-      const expenses = expenseRes.ok ? await expenseRes.json() : [];
+      let expenses = [];
+      try {
+        const expenseRes = await fetch('/api/expenses');
+        expenses = expenseRes.ok ? await expenseRes.json() : [];
+      } catch {
+        // Try localStorage fallback
+        const localExpenses = localStorage.getItem('vbs-expenses');
+        if (localExpenses) {
+          expenses = JSON.parse(localExpenses);
+          console.log('Loaded expenses from localStorage (API unavailable)');
+        }
+      }
       const totalExpenses = expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
 
       setStats({
