@@ -194,8 +194,6 @@ const Admin = () => {
       console.error('Error deleting teacher:', err);
       alert('Error deleting teacher');
     }
-  };  [name]: value
-    }));
   };
 
   return (
