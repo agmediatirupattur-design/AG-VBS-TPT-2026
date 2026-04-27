@@ -9,6 +9,80 @@ const Report = () => {
   const [expenses, setExpenses] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const defaultTeachers = [
+    { id: 1, name: 'Sis. Gethsiyal', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 2, name: 'Sharmila', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 3, name: 'Sis. Gracepriya', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 4, name: 'Sis. Archana', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 5, name: 'Sis. Esther', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 6, name: 'Jecitha', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 7, name: 'Sofia', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 8, name: 'Keerthana', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 9, name: 'Sis. Jamuna', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 10, name: 'Sis. Lakshmi', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 11, name: 'Priya Angel', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 12, name: 'Preethi', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 13, name: 'Sis. Megala', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 14, name: 'Sis. Puspalatha', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 15, name: 'Sis. Priyadarshini', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 16, name: 'Pr. Yuvashri', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 17, name: 'Jessica', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 18, name: 'Kishori', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 19, name: 'Shekina', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 20, name: 'Sis. Shamili', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 21, name: 'Sis. Nithya', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 22, name: 'Sis. Amutha Jose', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 23, name: 'Bro. Lambert', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 24, name: 'Sis. Dharani', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 25, name: 'Sis. Remi', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 26, name: 'Sis. Vennila', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 27, name: 'Sis. Rajmary', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 28, name: 'Bro. Vasudevan', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 29, name: 'Hari', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 30, name: 'Jeba', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 31, name: 'Yessaiya', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 32, name: 'Vignesh', attendance: { '27': false, '28': false, '29': false, '30': false } },
+    { id: 33, name: 'Chandra Mohan', attendance: { '27': false, '28': false, '29': false, '30': false } }
+  ];
+
+  const mergeTeacherData = (baseTeachers, localTeachers) => {
+    const merged = baseTeachers.map((teacher) => {
+      const localTeacher = localTeachers.find(item => item.id === teacher.id);
+      if (!localTeacher) return teacher;
+      return {
+        ...teacher,
+        ...localTeacher,
+        attendance: {
+          ...teacher.attendance,
+          ...localTeacher.attendance
+        }
+      };
+    });
+    localTeachers.forEach((localTeacher) => {
+      if (!merged.some(item => item.id === localTeacher.id)) {
+        merged.push(localTeacher);
+      }
+    });
+    return merged;
+  };
+
+  const getTeacherDisplayName = (teacher) => {
+    return (
+      teacher?.name ||
+      teacher?.teacherName ||
+      teacher?.displayName ||
+      teacher?.username ||
+      teacher?.studentName ||
+      'Unknown Teacher'
+    );
+  };
+
+  const normalizeTeacherRecord = (teacher) => ({
+    ...teacher,
+    name: teacher?.name || teacher?.teacherName || teacher?.displayName || teacher?.username || teacher?.studentName || '',
+    attendance: teacher?.attendance || { '27': false, '28': false, '29': false, '30': false }
+  });
+
   const loadData = useCallback(async () => {
     setIsRefreshing(true);
     // Fetch registrations
@@ -64,45 +138,21 @@ const Report = () => {
       console.error("Failed to fetch teacher attendance data", err);
     }
 
-    // Merge with localStorage data to ensure locally saved attendance is included
-    try {
-      const localAttendance = localStorage.getItem('vbs-attendance');
-      if (localAttendance && localAttendance !== 'undefined') {
-        const localData = JSON.parse(localAttendance);
-        
-        // Create a map of server data by id for quick lookup
-        const serverMap = new Map(attendanceData.map(teacher => [teacher.id, teacher]));
-        
-        // Merge: prefer local data if it exists, otherwise use server data
-        const merged = localData.map(localTeacher => {
-          const serverTeacher = serverMap.get(localTeacher.id);
-          if (serverTeacher) {
-            // Merge attendance: local takes precedence for each day
-            return {
-              ...serverTeacher,
-              attendance: {
-                ...serverTeacher.attendance,
-                ...localTeacher.attendance
-              }
-            };
-          }
-          return localTeacher;
-        });
-        
-        // Add any server-only teachers that aren't in localStorage
-        attendanceData.forEach(serverTeacher => {
-          if (!localData.some(local => local.id === serverTeacher.id)) {
-            merged.push(serverTeacher);
-          }
-        });
-        
-        attendanceData = merged;
+    const localAttendance = (() => {
+      try {
+        const raw = localStorage.getItem('vbs-attendance');
+        if (raw && raw !== 'undefined') return JSON.parse(raw);
+      } catch (err) {
+        console.warn("Invalid cached attendance", err);
       }
-    } catch (err) {
-      console.warn("Issue parsing cached attendance for merge", err);
-    }
+      return [];
+    })();
 
-    setTeacherAttendance(attendanceData);
+    attendanceData = attendanceData.length > 0
+      ? mergeTeacherData(attendanceData.map(normalizeTeacherRecord), localAttendance.map(normalizeTeacherRecord))
+      : mergeTeacherData(defaultTeachers.map(normalizeTeacherRecord), localAttendance.map(normalizeTeacherRecord));
+
+    setTeacherAttendance(attendanceData.map(normalizeTeacherRecord));
 
     // Fetch student attendance
     try {
@@ -184,7 +234,7 @@ const Report = () => {
       const present28 = att["28"] ? "Present" : "Absent";
       const present29 = att["29"] ? "Present" : "Absent";
       const present30 = att["30"] ? "Present" : "Absent";
-      const teacherName = teacher.name || teacher.teacherName || 'Unknown Teacher';
+      const teacherName = getTeacherDisplayName(teacher);
       const total = (att["27"] ? 1 : 0) + (att["28"] ? 1 : 0) + (att["29"] ? 1 : 0) + (att["30"] ? 1 : 0);
       return [`"${teacherName}"`, present27, present28, present29, present30, total];
     });
@@ -298,8 +348,8 @@ const Report = () => {
                 const att = teacher.attendance || {};
                 const total = (att["27"] ? 1 : 0) + (att["28"] ? 1 : 0) + (att["29"] ? 1 : 0) + (att["30"] ? 1 : 0);
                 return (
-                  <tr key={teacher.id}>
-                    <td style={{fontWeight: '600'}}>{teacher.name}</td>
+                  <tr key={teacher.id || teacher._id || teacher.name || teacher.teacherName || 'teacher-' + Math.random()}>
+                    <td style={{fontWeight: '600'}}>{getTeacherDisplayName(teacher)}</td>
                     <td>{att["27"] ? "✅" : "❌"}</td>
                     <td>{att["28"] ? "✅" : "❌"}</td>
                     <td>{att["29"] ? "✅" : "❌"}</td>

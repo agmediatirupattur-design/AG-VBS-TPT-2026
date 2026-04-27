@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, UserCheck, Receipt, Calendar, TrendingUp, Settings, Save } from 'lucide-react';
+import { Users, UserCheck, Receipt, Calendar, TrendingUp, Settings, Save, Plus, Trash2 } from 'lucide-react';
 import './Admin.css';
 
 const Admin = () => {
@@ -19,6 +19,9 @@ const Admin = () => {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [teachers, setTeachers] = useState([]);
+  const [newTeacher, setNewTeacher] = useState('');
+  const [isAddingTeacher, setIsAddingTeacher] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -37,21 +40,18 @@ const Admin = () => {
           if (localData) {
             registrations = JSON.parse(localData);
           }
-        }
-
-        // Fetch teacher attendance
-        let teachers = [];
+        }Data = [];
         try {
           const teacherRes = await fetch('/api/attendance');
-          teachers = teacherRes.ok ? await teacherRes.json() : [];
+          teachersData = teacherRes.ok ? await teacherRes.json() : [];
         } catch {
-          teachers = [];
+          teachersData = [];
         }
 
         const cachedAttendance = localStorage.getItem('vbs-attendance');
         if (cachedAttendance) {
           const localTeachers = JSON.parse(cachedAttendance);
-          const merged = teachers.map(teacher => {
+          const merged = teachersData.map(teacher => {
             const localTeacher = localTeachers.find(item => item.id === teacher.id);
             return localTeacher ? { ...teacher, ...localTeacher } : teacher;
           });
@@ -59,6 +59,11 @@ const Admin = () => {
             if (!merged.some(item => item.id === localTeacher.id)) {
               merged.push(localTeacher);
             }
+          });
+          teachersData = merged;
+        }
+
+        setTeachers(teachersData);   }
           });
           teachers = merged;
         }
@@ -72,7 +77,7 @@ const Admin = () => {
         const expenses = expenseRes.ok ? await expenseRes.json() : [];
         const totalExpenses = expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
 
-        setStats({
+        setStats({Data
           totalRegistrations: registrations.length,
           totalTeachers: teachers.length,
           totalStudents: students.length,
@@ -125,7 +130,69 @@ const Admin = () => {
     const { name, value } = e.target;
     setAdminSettings(prev => ({
       ...prev,
-      [name]: value
+    
+
+  const handleAddTeacher = async () => {
+    if (!newTeacher.trim()) {
+      alert('Please enter a teacher name');
+      return;
+    }
+
+    try {
+      const maxId = teachers.length > 0 ? Math.max(...teachers.map(t => t.id)) : 0;
+      const newTeacherObj = {
+        id: maxId + 1,
+        name: newTeacher.trim(),
+        attendance: { "27": false, "28": false, "29": false, "30": false }
+      };
+
+      // Save to backend
+      const response = await fetch('/api/attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTeacherObj),
+      });
+
+      if (response.ok) {
+        setTeachers([...teachers, newTeacherObj]);
+        setNewTeacher('');
+        setIsAddingTeacher(false);
+        setStats(prev => ({
+          ...prev,
+          totalTeachers: prev.totalTeachers + 1
+        }));
+        alert('Teacher added successfully!');
+      } else {
+        alert('Failed to add teacher');
+      }
+    } catch (err) {
+      console.error('Error adding teacher:', err);
+      alert('Error adding teacher');
+    }
+  };
+
+  const handleDeleteTeacher = async (teacherId) => {
+    if (!window.confirm('Are you sure you want to delete this teacher?')) {
+      return;
+    }
+
+    try {
+      // For now, we'll remove from local state
+      // In a full implementation, you'd have a DELETE endpoint
+      const updatedTeachers = teachers.filter(t => t.id !== teacherId);
+      setTeachers(updatedTeachers);
+      setStats(prev => ({
+        ...prev,
+        totalTeachers: prev.totalTeachers - 1
+      }));
+      alert('Teacher deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting teacher:', err);
+      alert('Error deleting teacher');
+    }
+  };  [name]: value
     }));
   };
 
@@ -193,6 +260,69 @@ const Admin = () => {
               value={adminSettings.eventName}
               onChange={handleInputChange}
               disabled={!isEditing}
+      <div className="teachers-management glass-panel slide-up-6">
+        <div className="teachers-header">
+          <Users size={24} color="var(--primary-color)" />
+          <h3>Teacher Management</h3>
+          <button 
+            className="add-teacher-btn"
+            onClick={() => setIsAddingTeacher(!isAddingTeacher)}
+          >
+            <Plus size={16} />
+            {isAddingTeacher ? 'Cancel' : 'Add Teacher'}
+          </button>
+        </div>
+
+        {isAddingTeacher && (
+          <div className="add-teacher-form">
+            <input
+              type="text"
+              placeholder="Enter teacher name"
+              value={newTeacher}
+              onChange={(e) => setNewTeacher(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddTeacher()}
+            />
+            <button className="confirm-btn" onClick={handleAddTeacher}>
+              <Save size={16} />
+              Add
+            </button>
+          </div>
+        )}
+
+        <div className="teachers-list">
+          {teachers.length === 0 ? (
+            <p className="no-teachers">No teachers added yet</p>
+          ) : (
+            <table className="teachers-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Teacher Name</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teachers.map((teacher) => (
+                  <tr key={teacher.id}>
+                    <td>{teacher.id}</td>
+                    <td>{teacher.name}</td>
+                    <td>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteTeacher(teacher.id)}
+                        title="Delete teacher"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
               placeholder="VBS 2026"
             />
           </div>
