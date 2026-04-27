@@ -269,6 +269,11 @@ const Admin = () => {
               value={adminSettings.eventName}
               onChange={handleInputChange}
               disabled={!isEditing}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="teachers-management glass-panel slide-up-6">
         <div className="teachers-header">
           <Users size={24} color="var(--primary-color)" />
