@@ -182,34 +182,34 @@ app.get('/auth/user', (req, res) => {
     
     // Map normalized names to display names for teachers
     const teacherNameMap = {
-      gethsiyal: 'Sis. Gethsiyal',
+      gethsiyal: 'Gethsiyal',
       sharmila: 'Sharmila',
-      gracepriya: 'Sis. Gracepriya',
-      archana: 'Sis. Archana',
-      esther: 'Sis. Esther',
+      gracepriya: 'Gracepriya',
+      archana: 'Archana',
+      esther: 'Esther',
       jecitha: 'Jecitha',
       sofia: 'Sofia',
       keerthana: 'Keerthana',
-      jamuna: 'Sis. Jamuna',
-      lakshmi: 'Sis. Lakshmi',
+      jamuna: 'Jamuna',
+      lakshmi: 'Lakshmi',
       priya: 'Priya Angel',
       preethi: 'Preethi',
-      megala: 'Sis. Megala',
-      puspalatha: 'Sis. Puspalatha',
-      priyadarshini: 'Sis. Priyadarshini',
-      yuvashri: 'Pr. Yuvashri',
+      megala: 'Megala',
+      puspalatha: 'Puspalatha',
+      priyadarshini: 'Priyadarshini',
+      yuvashri: 'Yuvashri',
       jessica: 'Jessica',
       kishori: 'Kishori',
       shekina: 'Shekina',
-      shamili: 'Sis. Shamili',
-      nithya: 'Sis. Nithya',
-      amutha: 'Sis. Amutha Jose',
-      lambert: 'Bro. Lambert',
-      dharani: 'Sis. Dharani',
-      remi: 'Sis. Remi',
-      vennila: 'Sis. Vennila',
-      rajmary: 'Sis. Rajmary',
-      vasudevan: 'Bro. Vasudevan',
+      shamili: 'Shamili',
+      nithya: 'Nithya',
+      amutha: 'Amutha Jose',
+      lambert: 'Lambert',
+      dharani: 'Dharani',
+      remi: 'Remi',
+      vennila: 'Vennila',
+      rajmary: 'Rajmary',
+      vasudevan: 'Vasudevan',
       hari: 'Hari',
       jeba: 'Jeba',
       yessaiya: 'Yessaiya',
@@ -330,34 +330,34 @@ async function initializeData() {
   try {
     // Initialize teachers - ensure all default teachers exist
     const defaultTeachers = [
-      { id: 1, name: "Sis. Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 1, name: "Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 2, name: "Sharmila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 3, name: "Sis. Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 4, name: "Sis. Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 5, name: "Sis. Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 3, name: "Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 4, name: "Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 5, name: "Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 6, name: "Jecitha", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 7, name: "Sofia", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 8, name: "Keerthana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 9, name: "Sis. Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 10, name: "Sis. Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 9, name: "Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 10, name: "Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 11, name: "Priya Angel", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 12, name: "Preethi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 13, name: "Sis. Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 14, name: "Sis. Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 15, name: "Sis. Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 16, name: "Pr. Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 13, name: "Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 14, name: "Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 15, name: "Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 16, name: "Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 17, name: "Jessica", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 18, name: "Kishori", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 19, name: "Shekina", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 20, name: "Sis. Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 21, name: "Sis. Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 22, name: "Sis. Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 23, name: "Bro. Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 24, name: "Sis. Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 25, name: "Sis. Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 26, name: "Sis. Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 27, name: "Sis. Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
-      { id: 28, name: "Bro. Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 20, name: "Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 21, name: "Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 22, name: "Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 23, name: "Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 24, name: "Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 25, name: "Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 26, name: "Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 27, name: "Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 28, name: "Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 29, name: "Hari", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 30, name: "Jeba", attendance: { "27": false, "28": false, "29": false, "30": false } },
       { id: 31, name: "Yessaiya", attendance: { "27": false, "28": false, "29": false, "30": false } },
@@ -365,12 +365,15 @@ async function initializeData() {
       { id: 33, name: "Chandra Mohan", attendance: { "27": false, "28": false, "29": false, "30": false } }
     ];
 
-    // Check and add any missing teachers
+    // Check and add any missing teachers, or update names if they changed
     for (const teacher of defaultTeachers) {
       const existingTeacher = await Teacher.findOne({ id: teacher.id });
       if (!existingTeacher) {
         await Teacher.create(teacher);
         console.log(`Added missing teacher: ${teacher.name}`);
+      } else if (existingTeacher.name !== teacher.name) {
+        await Teacher.updateOne({ id: teacher.id }, { $set: { name: teacher.name } });
+        console.log(`Updated teacher name to: ${teacher.name}`);
       }
     }
 
@@ -422,55 +425,67 @@ app.get('/api/attendance', async (req, res) => {
   try {
     let teachers = await Teacher.find();
     
-    // If no teachers exist, initialize default teachers
-    if (teachers.length === 0) {
-      console.log('No teachers found, initializing default teachers...');
-      const defaultTeachers = [
-        { id: 1, name: "Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 2, name: "Sharmila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 3, name: "Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 4, name: "Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 5, name: "Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 6, name: "Jecitha", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 7, name: "Sofia", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 8, name: "Keerthana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 9, name: "Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 10, name: "Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 11, name: "Priya Angel", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 12, name: "Preethi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 13, name: "Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 14, name: "Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 15, name: "Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 16, name: "Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 17, name: "Jessica", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 18, name: "Kishori", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 19, name: "Shekina", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 20, name: "Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 21, name: "Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 22, name: "Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 23, name: "Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 24, name: "Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 25, name: "Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 26, name: "Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 27, name: "Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 28, name: "Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 29, name: "Hari", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 30, name: "Jeba", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 31, name: "Yessaiya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 32, name: "Vignesh", attendance: { "27": false, "28": false, "29": false, "30": false } },
-        { id: 33, name: "Chandra Mohan", attendance: { "27": false, "28": false, "29": false, "30": false } }
-      ];
+    // Define default teachers
+    const defaultTeachers = [
+      { id: 1, name: "Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 2, name: "Sharmila", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 3, name: "Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 4, name: "Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 5, name: "Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 6, name: "Jecitha", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 7, name: "Sofia", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 8, name: "Keerthana", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 9, name: "Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 10, name: "Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 11, name: "Priya Angel", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 12, name: "Preethi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 13, name: "Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 14, name: "Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 15, name: "Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 16, name: "Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 17, name: "Jessica", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 18, name: "Kishori", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 19, name: "Shekina", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 20, name: "Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 21, name: "Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 22, name: "Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 23, name: "Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 24, name: "Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 25, name: "Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 26, name: "Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 27, name: "Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 28, name: "Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 29, name: "Hari", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 30, name: "Jeba", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 31, name: "Yessaiya", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 32, name: "Vignesh", attendance: { "27": false, "28": false, "29": false, "30": false } },
+      { id: 33, name: "Chandra Mohan", attendance: { "27": false, "28": false, "29": false, "30": false } }
+    ];
+    
+    // Ensure all default teachers exist in database
+    if (teachers.length < defaultTeachers.length) {
+      console.log(`Database has ${teachers.length} teachers, but expecting ${defaultTeachers.length}. Initializing missing teachers...`);
       
-      try {
-        await Teacher.insertMany(defaultTeachers);
-        console.log('Default teachers initialized successfully');
-        teachers = defaultTeachers;
-      } catch (initErr) {
-        console.error('Failed to initialize teachers:', initErr);
-        // Return default teachers as fallback even if DB insert fails
-        teachers = defaultTeachers;
+      for (const defaultTeacher of defaultTeachers) {
+        const existingTeacher = teachers.find(t => t.id === defaultTeacher.id);
+        if (!existingTeacher) {
+          try {
+            await Teacher.create(defaultTeacher);
+          } catch (createErr) {
+            // Ignore duplicate key errors
+            if (createErr.code !== 11000) {
+              console.error(`Failed to create teacher ${defaultTeacher.name}:`, createErr);
+            }
+          }
+        }
       }
+      
+      // Re-fetch all teachers after initialization
+      teachers = await Teacher.find();
     }
+    
+    // Sort teachers by id to ensure consistent order
+    teachers.sort((a, b) => a.id - b.id);
     
     res.json(teachers);
   } catch (err) {
@@ -483,13 +498,20 @@ app.get('/api/attendance', async (req, res) => {
 app.post('/api/attendance', async (req, res) => {
   try {
     const updatedTeachers = Array.isArray(req.body) ? req.body : [req.body];
-    const operations = updatedTeachers.map(updated => ({
-      updateOne: {
-        filter: { id: updated.id },
-        update: { $set: { name: updated.name, attendance: updated.attendance } },
-        upsert: true
-      }
-    }));
+    const operations = updatedTeachers.map(updated => {
+      const { _id, __v, ...teacherData } = updated;
+      const sanitizedData = {
+        name: teacherData.name,
+        attendance: teacherData.attendance || { "27": false, "28": false, "29": false, "30": false }
+      };
+      return {
+        updateOne: {
+          filter: { id: teacherData.id },
+          update: { $set: sanitizedData },
+          upsert: true
+        }
+      };
+    });
 
     if (operations.length) {
       await Teacher.bulkWrite(operations, { ordered: false });
@@ -517,12 +539,21 @@ app.get('/api/student-attendance', async (req, res) => {
 app.post('/api/student-attendance', async (req, res) => {
   try {
     const updatedStudents = Array.isArray(req.body) ? req.body : [req.body];
+    
+    // Validate and sanitize each student record
     const operations = updatedStudents.map(updated => {
       const { _id, __v, ...studentData } = updated;
+      
+      // Ensure id field exists
+      if (!studentData.id) {
+        console.error('Student record missing id field:', studentData);
+        throw new Error('Student record must have an id field');
+      }
+      
       const sanitizedData = {
-        studentName: studentData.studentName,
-        teacherName: studentData.teacherName,
-        addedBy: studentData.addedBy,
+        studentName: studentData.studentName || '',
+        teacherName: studentData.teacherName || '',
+        addedBy: studentData.addedBy || undefined,
         attendance: studentData.attendance || { "27": false, "28": false, "29": false, "30": false }
       };
       return {
@@ -532,17 +563,19 @@ app.post('/api/student-attendance', async (req, res) => {
           upsert: true
         }
       };
-    });
+    }).filter(op => op); // Remove any null operations
 
-    if (operations.length) {
-      await Student.bulkWrite(operations, { ordered: false });
+    if (operations.length === 0) {
+      return res.status(400).json({ error: 'No valid student records to save' });
     }
+
+    await Student.bulkWrite(operations, { ordered: false });
     
     const totalStudents = await Student.countDocuments();
     res.status(200).json({ message: 'Success', totalStudents });
   } catch (err) {
-    console.error('Error saving student attendance:', err);
-    res.status(500).json({ error: 'Failed to save student attendance data' });
+    console.error('Error saving student attendance:', err.message);
+    res.status(500).json({ error: 'Failed to save student attendance data: ' + err.message });
   }
 });
 

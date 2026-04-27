@@ -26,9 +26,7 @@ const Registration = () => {
     }
 
     const newEntry = {
-      ...formData,
-      id: Date.now().toString(),
-      dateSubmitted: new Date().toLocaleDateString()
+      ...formData
     };
 
     try {

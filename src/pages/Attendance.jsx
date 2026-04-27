@@ -3,6 +3,63 @@ import './Attendance.css';
 import { UserCheck } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
+const defaultTeachers = [
+  { id: 1, name: 'Gethsiyal', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 2, name: 'Sharmila', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 3, name: 'Gracepriya', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 4, name: 'Archana', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 5, name: 'Esther', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 6, name: 'Jecitha', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 7, name: 'Sofia', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 8, name: 'Keerthana', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 9, name: 'Jamuna', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 10, name: 'Lakshmi', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 11, name: 'Priya Angel', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 12, name: 'Preethi', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 13, name: 'Megala', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 14, name: 'Puspalatha', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 15, name: 'Priyadarshini', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 16, name: 'Yuvashri', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 17, name: 'Jessica', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 18, name: 'Kishori', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 19, name: 'Shekina', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 20, name: 'Shamili', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 21, name: 'Nithya', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 22, name: 'Amutha Jose', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 23, name: 'Lambert', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 24, name: 'Dharani', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 25, name: 'Remi', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 26, name: 'Vennila', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 27, name: 'Rajmary', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 28, name: 'Vasudevan', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 29, name: 'Hari', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 30, name: 'Jeba', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 31, name: 'Yessaiya', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 32, name: 'Vignesh', attendance: { '27': false, '28': false, '29': false, '30': false } },
+  { id: 33, name: 'Chandra Mohan', attendance: { '27': false, '28': false, '29': false, '30': false } }
+];
+
+const mergeTeacherData = (baseTeachers, localTeachers) => {
+  const merged = baseTeachers.map((teacher) => {
+    const localTeacher = localTeachers.find(item => item.id === teacher.id);
+    if (!localTeacher) return teacher;
+    return {
+      ...teacher,
+      ...localTeacher,
+      attendance: {
+        ...teacher.attendance,
+        ...localTeacher.attendance
+      }
+    };
+  });
+  localTeachers.forEach((localTeacher) => {
+    if (!merged.some(item => item.id === localTeacher.id)) {
+      merged.push(localTeacher);
+    }
+  });
+  return merged;
+};
+
 const Attendance = () => {
   const { username, role } = useContext(AuthContext);
   const [teachers, setTeachers] = useState([]);
@@ -28,64 +85,28 @@ const Attendance = () => {
         console.error("Failed to fetch attendance", err);
       }
 
-      // Removed problematic localStorage merge loop that might break data
-      let finalData = data.length > 0 ? data : [];
-      if (finalData.length === 0) {
-        const cachedAttendance = localStorage.getItem('vbs-attendance');
-        if (cachedAttendance) {
-          finalData = JSON.parse(cachedAttendance);
+      const localAttendance = (() => {
+        try {
+          const raw = localStorage.getItem('vbs-attendance');
+          return raw && raw !== 'undefined' ? JSON.parse(raw) : [];
+        } catch (err) {
+          console.warn('Failed to parse cached attendance', err);
+          return [];
         }
-      }
-      
-      // Fallback: Load default teachers if no data from API or localStorage
-      if (finalData.length === 0) {
-        finalData = [
-          { id: 1, name: "Sis. Gethsiyal", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 2, name: "Sharmila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 3, name: "Sis. Gracepriya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 4, name: "Sis. Archana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 5, name: "Sis. Esther", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 6, name: "Jecitha", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 7, name: "Sofia", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 8, name: "Keerthana", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 9, name: "Sis. Jamuna", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 10, name: "Sis. Lakshmi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 11, name: "Priya Angel", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 12, name: "Preethi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 13, name: "Sis. Megala", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 14, name: "Sis. Puspalatha", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 15, name: "Sis. Priyadarshini", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 16, name: "Pr. Yuvashri", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 17, name: "Jessica", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 18, name: "Kishori", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 19, name: "Shekina", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 20, name: "Sis. Shamili", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 21, name: "Sis. Nithya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 22, name: "Sis. Amutha Jose", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 23, name: "Bro. Lambert", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 24, name: "Sis. Dharani", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 25, name: "Sis. Remi", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 26, name: "Sis. Vennila", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 27, name: "Sis. Rajmary", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 28, name: "Bro. Vasudevan", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 29, name: "Hari", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 30, name: "Jeba", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 31, name: "Yessaiya", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 32, name: "Vignesh", attendance: { "27": false, "28": false, "29": false, "30": false } },
-          { id: 33, name: "Chandra Mohan", attendance: { "27": false, "28": false, "29": false, "30": false } }
-        ];
-      }
-      
-      if (role === 'admin') {
-        setTeachers(finalData);
-      } else if (username) {
-        // For teachers, show all teachers but they can only edit their own
+      })();
+
+      const finalData = mergeTeacherData(
+        data.length > 0 ? data : defaultTeachers,
+        localAttendance
+      );
+
+      if (role === 'admin' || username) {
         setTeachers(finalData);
       } else {
         setTeachers([]);
       }
     };
-    
+
     fetchAttendance();
   }, [username, role]);
 
@@ -120,12 +141,16 @@ const Attendance = () => {
     });
     
     setTeachers(updatedTeachers);
-    // Save to localStorage immediately for persistence
-    saveAttendanceLocally(updatedTeachers);
+    // Save a temporary backup only when the server cannot be reached yet
+    saveAttendanceBackup(updatedTeachers);
   };
 
-  const saveAttendanceLocally = (attendanceData) => {
+  const saveAttendanceBackup = (attendanceData) => {
     localStorage.setItem('vbs-attendance', JSON.stringify(attendanceData));
+  };
+
+  const clearAttendanceBackup = () => {
+    localStorage.removeItem('vbs-attendance');
   };
 
   const handleSave = async () => {
@@ -140,13 +165,12 @@ const Attendance = () => {
         throw new Error('Failed to save attendance');
       }
 
-      // Save to localStorage even on success to keep in sync
-      saveAttendanceLocally(teachers);
+      clearAttendanceBackup();
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error("Failed to save", err);
-      saveAttendanceLocally(teachers);
+      saveAttendanceBackup(teachers);
       alert("Failed to save attendance to the server. Progress was saved locally.");
     }
   };
