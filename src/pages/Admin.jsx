@@ -130,7 +130,9 @@ const Admin = () => {
     const { name, value } = e.target;
     setAdminSettings(prev => ({
       ...prev,
-    
+      [name]: value
+    }));
+  };
 
   const handleAddTeacher = async () => {
     if (!newTeacher.trim()) {
