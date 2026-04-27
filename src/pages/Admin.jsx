@@ -23,83 +23,83 @@ const Admin = () => {
   const [newTeacher, setNewTeacher] = useState('');
   const [isAddingTeacher, setIsAddingTeacher] = useState(false);
 
-  useEffect(() => {
-    const fetchStats = async () => {
+  const fetchStats = async () => {
+    try {
+      // Fetch registrations
+      let registrations = [];
       try {
-        // Fetch registrations
-        let registrations = [];
-        try {
-          const regRes = await fetch('/api/registrations');
-          registrations = regRes.ok ? await regRes.json() : [];
-        } catch {
-          registrations = [];
+        const regRes = await fetch('/api/registrations');
+        registrations = regRes.ok ? await regRes.json() : [];
+      } catch {
+        registrations = [];
+      }
+
+      if (!registrations.length) {
+        const localData = localStorage.getItem('vbs-registrations');
+        if (localData) {
+          registrations = JSON.parse(localData);
         }
+      }
 
-        if (!registrations.length) {
-          const localData = localStorage.getItem('vbs-registrations');
-          if (localData) {
-            registrations = JSON.parse(localData);
-          }
-        }Data = [];
-        try {
-          const teacherRes = await fetch('/api/attendance');
-          teachersData = teacherRes.ok ? await teacherRes.json() : [];
-        } catch {
-          teachersData = [];
-        }
+      // Fetch teachers
+      let teachersData = [];
+      try {
+        const teacherRes = await fetch('/api/attendance');
+        teachersData = teacherRes.ok ? await teacherRes.json() : [];
+      } catch {
+        teachersData = [];
+      }
 
-        const cachedAttendance = localStorage.getItem('vbs-attendance');
-        if (cachedAttendance) {
-          const localTeachers = JSON.parse(cachedAttendance);
-          const merged = teachersData.map(teacher => {
-            const localTeacher = localTeachers.find(item => item.id === teacher.id);
-            return localTeacher ? { ...teacher, ...localTeacher } : teacher;
-          });
-          localTeachers.forEach(localTeacher => {
-            if (!merged.some(item => item.id === localTeacher.id)) {
-              merged.push(localTeacher);
-            }
-          });
-          teachersData = merged;
-        }
-
-        setTeachers(teachersData);   }
-          });
-          teachers = merged;
-        }
-
-        // Fetch student attendance
-        const studentRes = await fetch('/api/student-attendance');
-        const students = studentRes.ok ? await studentRes.json() : [];
-
-        // Fetch expenses
-        const expenseRes = await fetch('/api/expenses');
-        const expenses = expenseRes.ok ? await expenseRes.json() : [];
-        const totalExpenses = expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
-
-        setStats({Data
-          totalRegistrations: registrations.length,
-          totalTeachers: teachers.length,
-          totalStudents: students.length,
-          totalExpenses: totalExpenses
+      const cachedAttendance = localStorage.getItem('vbs-attendance');
+      if (cachedAttendance) {
+        const localTeachers = JSON.parse(cachedAttendance);
+        const merged = teachersData.map(teacher => {
+          const localTeacher = localTeachers.find(item => item.id === teacher.id);
+          return localTeacher ? { ...teacher, ...localTeacher } : teacher;
         });
-      } catch (err) {
-        console.error('Failed to fetch stats', err);
+        localTeachers.forEach(localTeacher => {
+          if (!merged.some(item => item.id === localTeacher.id)) {
+            merged.push(localTeacher);
+          }
+        });
+        teachersData = merged;
       }
-    };
 
-    const fetchAdminSettings = async () => {
-      try {
-        const response = await fetch('/api/admin');
-        if (response.ok) {
-          const settings = await response.json();
-          setAdminSettings(settings);
-        }
-      } catch (err) {
-        console.error('Failed to fetch admin settings', err);
+      setTeachers(teachersData);
+
+      // Fetch student attendance
+      const studentRes = await fetch('/api/student-attendance');
+      const students = studentRes.ok ? await studentRes.json() : [];
+
+      // Fetch expenses
+      const expenseRes = await fetch('/api/expenses');
+      const expenses = expenseRes.ok ? await expenseRes.json() : [];
+      const totalExpenses = expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
+
+      setStats({
+        totalRegistrations: registrations.length,
+        totalTeachers: teachersData.length,
+        totalStudents: students.length,
+        totalExpenses: totalExpenses
+      });
+    } catch (err) {
+      console.error('Failed to fetch stats', err);
+    }
+  };
+
+  const fetchAdminSettings = async () => {
+    try {
+      const response = await fetch('/api/admin');
+      if (response.ok) {
+        const settings = await response.json();
+        setAdminSettings(settings);
       }
-    };
+    } catch (err) {
+      console.error('Failed to fetch admin settings', err);
+    }
+  };
 
+  useEffect(() => {
     fetchStats();
     fetchAdminSettings();
   }, []);
@@ -201,7 +201,16 @@ const Admin = () => {
       <div className="admin-header glass-panel">
         <TrendingUp size={40} color="var(--primary-color)" />
         <h2>Admin Dashboard</h2>
-        <p>Overview of VBS 2026 activities and statistics</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+          <button 
+            className="btn btn-primary" 
+            onClick={fetchStats}
+            style={{ padding: '8px 16px', fontSize: '0.9rem' }}
+          >
+            🔄 Refresh Data
+          </button>
+          <p>Overview of VBS 2026 activities and statistics</p>
+        </div>
       </div>
 
       <div className="stats-grid">
