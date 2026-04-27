@@ -156,32 +156,6 @@ const StudentAttendance = () => {
             setStudents(data.filter(s => isTeacherMatch(getTeacherName(s), username)));
           }
         }
-      } catch (fetchErr) {
-        console.error('Network error fetching students:', fetchErr);
-        // Try localStorage fallback
-        const localData = localStorage.getItem('vbs-student-attendance');
-        if (localData) {
-          const data = JSON.parse(localData);
-          if (canAllocate) {
-            setStudents(data);
-          } else {
-            const localizeName = (name = '') =>
-              name.toString().toLowerCase().trim().replace(/^(sis\.|bro\.|pr\.|dr\.|mr\.|mrs\.|ms\.)\s*/i, '').trim();
-            const isTeacherMatch = (storedName, currentName) => {
-              const stored = localizeName(storedName);
-              const current = localizeName(currentName);
-              const storedFirst = stored.split(' ')[0];
-              const currentFirst = current.split(' ')[0];
-              return (
-                stored === current ||
-                stored.includes(current) ||
-                current.includes(stored) ||
-                storedFirst === currentFirst
-              );
-            };
-            setStudents(data.filter(s => isTeacherMatch(getTeacherName(s), username)));
-          }
-        }
       }
 
       // Fetch teacher data
